@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import supabase from "./database/supabaseClient";
 
 
 export default function Consent() {
 
+  const navigate = useNavigate();
   const [consentAgree, setConsentAgree] = useState(false);
 
   const purposeOfStudy = "Anda diundang untuk berpartisipasi dalam penelitian yang bertujuan mengoptimalkan strategi kampanye digital melalui penggunaan nudge berbasis data. Tujuan penelitian ini adalah untuk mengumpulkan data yang akan membantu kami memahami bagaimana berbagai nudge memengaruhi perilaku dan pengambilan keputusan pengguna. Informasi ini akan digunakan untuk mengembangkan model dalam mengoptimalkan nudge pada kampanye pemasaran digital."
@@ -16,6 +18,22 @@ export default function Consent() {
   const risks = "(The risks associated with this study are minimal. You may feel discomfort in answering some personal questions, but you are free to skip any question you prefer not to answer.)"
   const manfaat = "Meskipun tidak ada manfaat langsung bagi Anda dalam berpartisipasi dalam penelitian ini, partisipasi Anda akan berkontribusi pada pemahaman yang lebih baik tentang cara meningkatkan strategi kampanye digital, yang mungkin akan memberikan manfaat bagi bisnis dan konsumen di masa depan"
   const benefits = "(While there are no direct benefits to you for participating in this study, your participation will contribute to a better understanding of how to improve digital campaign strategies, which may benefit businesses and consumers in the future.)"
+
+
+  async function getCurrentSession() {
+    const { data, error } = await supabase.auth.getSession();
+    if(data && data.session) {
+      navigate('/surveyHome')
+    } 
+    if(error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    getCurrentSession();
+  }, [])
+  
 
   return (
     <div className="p-4 flex flex-col space-y-3 items-center">

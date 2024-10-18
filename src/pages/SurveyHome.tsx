@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import supabase from "../database/supabaseClient"
+import { useNavigate } from "react-router-dom";
 
 export default function SurveyHome() {
 
+  const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState(''); 
   
   async function getLoggedInUser() {
@@ -12,11 +14,36 @@ export default function SurveyHome() {
     }
   }
 
+  async function getCurrentSession() {
+    const { data, error } = await supabase.auth.getSession();
+    if(data && data.session) {
+      getLoggedInUser();
+    } else {
+      navigate('/');
+    }
+    if(error) {
+      console.log(error);
+    }
+  }
+
+  async function userSignOut() {
+    const { error } = await supabase.auth.signOut();
+    if(error) {
+      throw new Error('Error while signing out');
+    } else {
+      getCurrentSession();
+    }
+  }
+
   useEffect(() => {
-    getLoggedInUser();
+    getCurrentSession();
   }, [])
   
+
   return (
-    <div>Welcome, {userEmail}</div>
+    <div className="flex flex-col">
+      <div>Welcome, {userEmail}</div>
+      <button onClick={userSignOut}>Sign out</button>
+    </div>
   )
 }
