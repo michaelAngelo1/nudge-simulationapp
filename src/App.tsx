@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import SignIn from './auth/ui/signIn'
 import SignUp from './auth/ui/signUp'
 import Consent from './Consent'
+import SurveyHome from './pages/SurveyHome'
 
 function App() {
 
@@ -14,6 +15,7 @@ function App() {
         <Route path='/' element={<Consent/>}/>
         <Route path='auth/ui/signIn' element={<SignIn/>}/>
         <Route path='auth/ui/signUp' element={<SignUp/>}/>
+        <Route path='surveyHome' element={<SurveyHome/>}/>
       </Routes>
     </BrowserRouter>
   )
