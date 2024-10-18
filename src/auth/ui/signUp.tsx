@@ -31,17 +31,15 @@ export default function SignUp() {
   }
 
   return (
-    <div className="p-3">
-      <div className="flex justify-center max-tablet:justify-center max-mobile:justify-center">
-        <form onSubmit={handleSubmit(handleSignUp)} className="flex flex-col space-y-2 max-w-md bg-orange-60 0 p-3">
-          <div className="text-xl">Create account to enter the study</div>
-          <div className="text-xs">Don't worry. It will be quick :)</div>
-          <input {...register("email", { required: "This is required"})} className="input input-primary input-bordered text-xs" type="email" placeholder="Email" />
-          <input {...register("password", { required: "This is required"})} className="input input-primary input-bordered text-xs" type="password" placeholder="Password" />
-          <input className="btn btn-primary" type="submit"/>
-          <div className="text-xs text-center">Already have an account? <Link to='/auth/ui/signIn' className="text-xs underline">Sign In</Link></div>
-        </form>
-      </div>
+    <div className="h-screen flex justify-center items-start max-tablet:items-center max-mobile:items-center">
+      <form onSubmit={handleSubmit(handleSignUp)} className="flex flex-col space-y-2 max-w-md p-4 max-tablet:w-4/5 max-mobile:w-11/12">
+        <div className="text-xl">Create account to enter the study</div>
+        <div className="text-xs">Don't worry. It will be quick :)</div>
+        <input {...register("email", { required: "This is required"})} className="input input-primary input-bordered text-xs" type="email" placeholder="Email" />
+        <input {...register("password", { required: "This is required"})} className="input input-primary input-bordered text-xs" type="password" placeholder="Password" />
+        <input className="btn btn-primary" type="submit"/>
+        <div className="text-xs text-center">Already have an account? <Link to='/auth/ui/signIn' className="text-xs underline">Sign In</Link></div>
+      </form>
     </div>
   )
 }
