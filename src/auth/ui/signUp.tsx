@@ -2,14 +2,18 @@ import { useForm } from "react-hook-form"
 import supabase from "../../database/supabaseClient";
 import { AuthProps } from "../../interface/AuthInterface";
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import ReactLoading from "react-loading";
 
 
 export default function SignUp() {
 
   const { register, handleSubmit } = useForm<AuthProps>();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   async function handleSignUp(data: AuthProps) {
+    setLoading(true);
     if(data.password.length < 6) {
       alert("Password length must be minimum 6 letters");
     }
@@ -25,9 +29,18 @@ export default function SignUp() {
       if(error) {
         throw new Error("Error while signing up");
       } else {
+        setLoading(false);
         console.log('Success signing up');
         navigate('/auth/ui/signIn')
       }
+  }
+
+  if(loading) {
+    return (
+      <div className="h-screen w-screen flex justify-center items-center">
+        <ReactLoading></ReactLoading>
+      </div>
+    )
   }
 
   return (
@@ -37,7 +50,7 @@ export default function SignUp() {
         <div className="text-xs">Don't worry. It will be quick :)</div>
         <input {...register("email", { required: "This is required"})} className="input input-primary input-bordered text-xs" type="email" placeholder="Email" />
         <input {...register("password", { required: "This is required"})} className="input input-primary input-bordered text-xs" type="password" placeholder="Password" />
-        <input className="btn btn-primary" type="submit"/>
+        <input className="btn btn-primary" type="submit"/>   
         <div className="text-xs text-center">Already have an account? <Link to='/auth/ui/signIn' className="text-xs underline">Sign In</Link></div>
       </form>
     </div>
