@@ -3,6 +3,7 @@ import SignIn from './auth/ui/signIn'
 import SignUp from './auth/ui/signUp'
 import Consent from './Consent'
 import SurveyHome from './pages/SurveyHome'
+import SurveyForms from './pages/SurveyForms'
 
 function App() {
 
@@ -16,6 +17,7 @@ function App() {
         <Route path='auth/ui/signIn' element={<SignIn/>}/>
         <Route path='auth/ui/signUp' element={<SignUp/>}/>
         <Route path='surveyHome' element={<SurveyHome/>}/>
+        <Route path='surveyForms' element={<SurveyForms/>}/>
       </Routes>
     </BrowserRouter>
   )
