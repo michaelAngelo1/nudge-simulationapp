@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const useGetUser = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [userId, setUserId] = useState('');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export const useGetUser = () => {
 
         if (session?.user) {
           setUser(session.user);
+          setUserId(session.user.id);
         } else {
           setUser(null);
         }
@@ -67,5 +69,5 @@ export const useGetUser = () => {
     };
   }, []);
 
-  return { user, loading, error };
+  return { user, userId, loading, error };
 };

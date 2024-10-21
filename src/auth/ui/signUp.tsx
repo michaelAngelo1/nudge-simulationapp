@@ -38,7 +38,7 @@ export default function SignUp() {
   if(loading) {
     return (
       <div className="h-screen w-screen flex justify-center items-center">
-        <ReactLoading></ReactLoading>
+        <span className="loading loading-spinner"></span>
       </div>
     )
   }
