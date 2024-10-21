@@ -9,7 +9,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className='navbar flex justify-center items-center border-b border-1 border-base'>
+      <div className='navbar sticky top-0 z-50 bg-base-100 flex justify-center items-center border-b border-1 border-base'>
         <div className='text-center text-2xl font-bold'>Nudge Simulation App</div>                                  
       </div>
       <Routes>
