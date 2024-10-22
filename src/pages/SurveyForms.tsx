@@ -38,7 +38,7 @@ export default function SurveyForms() {
         {
           user_id: userId,
           question_id: question_id,
-          response: [response],
+          response: response,
         },  
         { 
           onConflict: ['user_id','question_id'] 
@@ -72,7 +72,7 @@ export default function SurveyForms() {
                   {
                     question.options.map((option, index) => (
                       <div key={index} onClick={() => postSingleSelectAnswer({ question_id: question.id, response: [option] })} className="flex flex-row space-x-2 items-center">
-                        <div className={`w-4 h-4 rounded-full border border-1 ${selectedOption[question.id] === [option] ? "bg-slate-200" : "bg-transparent"}`}></div>
+                        <div className={`w-4 h-4 rounded-full border border-1 ${selectedOption[question.id]?.includes(option) ? "bg-slate-200" : "bg-transparent"}`}></div>
                         <div>{option}</div>
                       </div>
                     ))
