@@ -1,24 +1,11 @@
-import { useEffect } from "react";
 import supabase from "../database/supabaseClient"
 import { Link, useNavigate } from "react-router-dom";
-import { useGetUser } from "../hooks/useGetUser";
+import { useSession } from "../context/SessionContext";
 
 export default function SurveyHome() {
   
-  const { user } = useGetUser();
+  const { user } = useSession();
   const navigate = useNavigate();
-
-  async function getCurrentSession() {
-    const { data, error } = await supabase.auth.getSession();
-    if(data && data.session) {
-      console.log('user is logged in');
-    } else {
-      navigate('/');
-    }
-    if(error) {
-      console.log(error);
-    }
-  }
 
   async function userSignOut() {
     const { error } = await supabase.auth.signOut();
@@ -26,13 +13,9 @@ export default function SurveyHome() {
       throw new Error('Error while signing out');
     } else {
       console.log('user signed out');
+      navigate('/')
     }
   }
-
-  useEffect(() => {
-    getCurrentSession();
-  }, [])
-  
 
   return (
     <div className="p-3 h-screen flex flex-col space-y-3 justify-center items-center max-mobile:justify-center max-tablet:justify-center">
@@ -47,6 +30,7 @@ export default function SurveyHome() {
         to="/surveyForms">
         Let's start
       </Link>
+      <button className="btn" onClick={userSignOut}>sign out</button>
     </div>
 
   )

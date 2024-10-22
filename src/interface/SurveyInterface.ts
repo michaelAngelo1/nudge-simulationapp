@@ -7,9 +7,7 @@ export interface Question {
   survey_type_id: string;
 }
 
-export interface UserResponses {
-  created_at: string;
-  user_id: string;
+export interface SingleUserResponse {
   question_id: string;
   response: string[];
 }

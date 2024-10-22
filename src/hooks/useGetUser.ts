@@ -51,7 +51,7 @@ export const useGetUser = () => {
       } else if (event === 'SIGNED_IN') {
         // handle sign in event
         console.log('sign in event: ', data);
-        navigate('/surveyHome');
+        // navigate('/surveyHome');
       } else if (event === 'SIGNED_OUT') {
         console.log('sign out event: ', data);
         navigate('/')
