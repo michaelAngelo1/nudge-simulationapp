@@ -5,8 +5,10 @@ import supabase from "./database/supabaseClient";
 
 export default function Consent() {
 
-  const navigate = useNavigate();
   const [consentAgree, setConsentAgree] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false); // Track session check state
+  const [isMounted, setIsMounted] = useState(false); // Track if the component is mounted
+  const navigate = useNavigate();
 
   const purposeOfStudy = "Anda diundang untuk berpartisipasi dalam penelitian yang bertujuan mengoptimalkan strategi kampanye digital melalui penggunaan nudge berbasis data. Tujuan penelitian ini adalah untuk mengumpulkan data yang akan membantu kami memahami bagaimana berbagai nudge memengaruhi perilaku dan pengambilan keputusan pengguna. Informasi ini akan digunakan untuk mengembangkan model dalam mengoptimalkan nudge pada kampanye pemasaran digital."
   const purposeOfStudyEng = "(You are being invited to participate in a research study aimed at optimizing digital campaign strategies through the use of data-driven nudges. The purpose of this study is to collect data that will help us understand how different nudges influence user behavior and decision-making. This information will be used to develop a model for optimizing nudges in digital marketing campaigns.)"
@@ -20,19 +22,41 @@ export default function Consent() {
   const benefits = "(While there are no direct benefits to you for participating in this study, your participation will contribute to a better understanding of how to improve digital campaign strategies, which may benefit businesses and consumers in the future.)"
 
 
-  async function getCurrentSession() {
-    const { data, error } = await supabase.auth.getSession();
-    if(data && data.session) {
-      navigate('/surveyHome')
-    } 
-    if(error) {
-      console.log(error);
-    }
-  }
-
+  // Check session on component mount
   useEffect(() => {
-    getCurrentSession();
-  }, [])
+    let isActive = true;
+
+    async function getCurrentSession() {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (isActive && data && data.session) {
+          navigate('/surveyHome');
+        }
+        if (error) {
+          console.error(error);
+        }
+      } catch (error) {
+        console.error('Session error:', error);
+      } finally {
+        if (isActive) {
+          setSessionChecked(true);
+        }
+      }
+    }
+
+    if (!sessionChecked && isMounted) {
+      getCurrentSession();
+    }
+
+    return () => {
+      isActive = false; // Cleanup effect to prevent state updates after unmounting
+    };
+  }, [sessionChecked, isMounted, navigate]);
+
+  // Set the component as mounted after the first render
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
 
   return (
