@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import supabase from "../database/supabaseClient"
-import { Question, SingleUserResponse } from "../interface/SurveyInterface";
+import { Question, SingleUserResponse, SurveyType } from "../interface/SurveyInterface";
 import { useGetUser } from "../hooks/useGetUser";
 import { useSession } from "../context/SessionContext";
+import { isButtonElement } from "react-router-dom/dist/dom";
 
 // metode jawab: pilih jawaban, trigger opsi "change answer" enabled,
 // change_answer onclick -> delete record jawaban from that question
@@ -14,9 +15,15 @@ export default function SurveyForms() {
   const { user } = useSession();
   console.log('logged in user: ', user);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [surveyTypes, setSurveyTypes] = useState<SurveyType[]>([]);
+  const [currentSurveyType, setCurrentSurveyType] = useState<string>('');
+  const [index, setIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<{[key: string]: string[] }>({}); 
   const [answered, setAnswered] = useState<{[key: string]: boolean}>({});
   const [answerChange, setAnswerChange] = useState(false);
+
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   async function fetchQuestions() {
     const { data, error } = await supabase
@@ -29,6 +36,19 @@ export default function SurveyForms() {
     }
     if(error) {
       console.log('error while fetch questions');
+    }
+  }
+
+  async function fetchSurveyTypes() {
+    const { data, error } = await supabase
+      .from('survey_types')
+      .select('*');
+    if(data) {
+      console.log('survey type data: ', data);
+      setSurveyTypes(data);
+    }
+    if(error) {
+      console.log('error while fetching survey types: ', error);
     }
   }
   
@@ -126,25 +146,66 @@ export default function SurveyForms() {
     }));
   }
 
+  // pagination by survey types
+  const handleNext = () => {
+    if(index < surveyTypes.length) {
+      setIndex(index + 1);
+      setCurrentSurveyType(surveyTypes[index].type_name);
+      scrollToTop();
+    }
+  }
+
+  const handlePrevious = () => {
+    if(surveyTypes.length > 0) {
+      setIndex(index - 1)
+      setCurrentSurveyType(surveyTypes[index].type_name);
+      scrollToTop();
+    }
+  }
+
+  const scrollToTop = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   useEffect(() => {
     fetchQuestions();
-  }, [answerChange]);
+    fetchSurveyTypes();
+  }, []);
 
   useEffect(() => {
     if (questions.length > 0) {
       fetchCurrentUserResponses();
     }
-  }, [questions]);
-  
-  
+  }, [questions, userId]);
 
+  useEffect(() => {
+    if(surveyTypes.length > 0) {
+      setCurrentSurveyType(surveyTypes[index].type_name);
+    }
+  }, [surveyTypes, index])
+
+  useEffect(() => {
+    questions.map((question) => {
+      surveyTypes.map((surveyType) => {
+        if(question.survey_type_id == surveyType.id) {
+          console.log('survey name: ', surveyType.type_name);
+          question.survey_type_name = surveyType.type_name;
+        }
+      })
+    })
+  }, [questions, surveyTypes])
+  
   return (
-    <div className="flex justify-center">
-      <div className="m-3 border border-1 p-4 w-1/2 max-mobile:w-full max-tablet:w-full">
-        <div className="text-xl font-medium">Data Demografis</div>
+    <div ref={scrollRef} className="flex flex-col justify-center items-center m-3">
+      <div className="border border-1 p-4 w-1/2 max-mobile:w-full max-tablet:w-full">
+        <div className="text-xl font-medium">{currentSurveyType}</div>
         <div className="flex flex-col overflow-auto">
           {
-            questions.map((question) => {
+            questions
+              .filter((question) => question.survey_type_name == currentSurveyType)
+              .map((question) => {
               return (
                 <div key={question.id} className="flex flex-col space-y-2 mt-4">
                   <div className="flex flex-row items-center space-x-2">
@@ -169,6 +230,13 @@ export default function SurveyForms() {
             })
           }
         </div>
+      </div>
+      <div className="flex flex-col space-y-2 mt-3">
+        <div className="flex flex-row p-3 space-x-2">
+          <button disabled={index == 0 && true} onClick={handlePrevious} className="btn btn-secondary text-sm font-medium">Previous</button>
+          <button disabled={index == surveyTypes.length - 1 && true} onClick={handleNext} className="btn btn-secondary text-sm font-medium">Next</button>
+        </div>
+        {index === surveyTypes.length - 1 && <button className="btn btn-primary text-sm font-medium">Submit. Go to simulation</button>}
       </div>
     </div>
   )

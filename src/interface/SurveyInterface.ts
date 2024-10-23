@@ -1,3 +1,10 @@
+export interface SurveyType {
+  id: string;
+  type_name: string;
+  description: string;
+  created_at: string;
+}
+
 export interface Question {
   created_at: string;
   id: string;
@@ -5,6 +12,7 @@ export interface Question {
   question_text: string;
   question_type: string;
   survey_type_id: string;
+  survey_type_name: string | null;
 }
 
 export interface SingleUserResponse {
