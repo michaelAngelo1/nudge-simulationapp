@@ -3,7 +3,6 @@ import supabase from "../database/supabaseClient"
 import { Question, SingleUserResponse } from "../interface/SurveyInterface";
 import { useGetUser } from "../hooks/useGetUser";
 import { useSession } from "../context/SessionContext";
-import { v4 as uuidv4 } from 'uuid';
 
 // metode jawab: pilih jawaban, trigger opsi "change answer" enabled,
 // change_answer onclick -> delete record jawaban from that question
@@ -15,7 +14,6 @@ export default function SurveyForms() {
   const { user } = useSession();
   console.log('logged in user: ', user);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [responses, setResponses] = useState<SingleUserResponse[]>([]);
   const [selectedOption, setSelectedOption] = useState<{[key: string]: string[] }>({}); 
   const [answered, setAnswered] = useState<{[key: string]: boolean}>({});
   const [answerChange, setAnswerChange] = useState(false);
@@ -87,7 +85,6 @@ export default function SurveyForms() {
           console.log('matching questions');
         }
       }
-      setResponses(data);
     }
     if(error) {
       console.log('error while fetch responses', error);
@@ -149,9 +146,9 @@ export default function SurveyForms() {
           {
             questions.map((question) => {
               return (
-                <div key={question.id} className="flex flex-col space-y-2 mt-3">
+                <div key={question.id} className="flex flex-col space-y-2 mt-4">
                   <div className="flex flex-row items-center space-x-2">
-                    <div className="">{question.question_text}</div>
+                    <div className="text-base font-medium">{question.question_text}</div>
                     {
                       answered[question.id] ?
                       <div onClick={() => handleChangeAnswer(question.id)} className="btn btn-sm text-xs font-light">Change Answer</div>
