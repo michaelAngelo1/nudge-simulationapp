@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import supabase from "../database/supabaseClient"
-import { Question, SingleUserResponse, SurveyType } from "../interface/SurveyInterface";
+import { Question, SurveyType, UserResponse } from "../interface/SurveyInterface";
 import { useGetUser } from "../hooks/useGetUser";
 import { useSession } from "../context/SessionContext";
-import { isButtonElement } from "react-router-dom/dist/dom";
 
 // metode jawab: pilih jawaban, trigger opsi "change answer" enabled,
 // change_answer onclick -> delete record jawaban from that question
@@ -20,12 +19,12 @@ export default function SurveyForms() {
   const [index, setIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<{[key: string]: string[] }>({}); 
   const [answered, setAnswered] = useState<{[key: string]: boolean}>({});
-  const [answerChange, setAnswerChange] = useState(false);
-
+  const [loading, setLoading] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   async function fetchQuestions() {
+    setLoading(true);
     const { data, error } = await supabase
       .from('questions')
       .select('*');
@@ -33,6 +32,7 @@ export default function SurveyForms() {
     if(data) {
       console.log('questions data: ', data);
       setQuestions(data);
+      setLoading(false);
     }
     if(error) {
       console.log('error while fetch questions');
@@ -52,7 +52,7 @@ export default function SurveyForms() {
     }
   }
   
-  async function postSingleSelectAnswer({ question_id, response } : SingleUserResponse) {
+  async function postSingleSelectAnswer({ question_id, response } : UserResponse) {
     setSelectedOption((prevSelectedOption) => ({
       ...prevSelectedOption,
       [question_id]: response, // Set the selected option for the corresponding question
@@ -77,7 +77,49 @@ export default function SurveyForms() {
     }
   }
 
+  // Post Multi-Select Answer
+  async function postMultiSelectAnswer({ question_id, response }: UserResponse) {
+    if (!Array.isArray(response)) {
+      console.log("Response for multi-select must be an array.");
+      return;
+    }
+
+    setSelectedOption((prevSelectedOption) => ({
+      ...prevSelectedOption,
+      [question_id]: response,
+    }));
+
+    const { data, error } = await supabase.from("user_responses").upsert(
+      {
+        user_id: userId,
+        question_id: question_id,
+        response: response,
+      }
+    ).select();
+
+    if (data) {
+      console.log("Multi-select response saved successfully:", data);
+      handleQuestionAnswered(question_id, true);
+    }
+    if (error) {
+      console.log("Error submitting multi-select response:", error);
+    }
+  }
+
+  // Toggle Multi-Select Answer
+  const toggleMultiSelectAnswer = (question_id: string, option: string) => {
+    setSelectedOption((prevSelectedOption) => {
+      const currentSelection = prevSelectedOption[question_id] || [];
+      const newSelection = currentSelection.includes(option)
+        ? currentSelection.filter((item) => item !== option)
+        : [...currentSelection, option];
+
+      return { ...prevSelectedOption, [question_id]: newSelection };
+    });
+  };
+
   const fetchCurrentUserResponses = async () => {
+    setLoading(true);
     const { data, error } = await supabase
       .from('user_responses')
       .select('*')
@@ -85,7 +127,7 @@ export default function SurveyForms() {
     
     if(data) {
       console.log('responses data: ', data);
-      const updateSelectedOptions = (data: SingleUserResponse) => {
+      const updateSelectedOptions = (data: UserResponse) => {
         setSelectedOption((prevSelectedOption) => ({
           ...prevSelectedOption,
           [data.question_id]: data.response,
@@ -105,6 +147,7 @@ export default function SurveyForms() {
           console.log('matching questions');
         }
       }
+      setLoading(false);
     }
     if(error) {
       console.log('error while fetch responses', error);
@@ -112,7 +155,6 @@ export default function SurveyForms() {
   }
 
   const handleChangeAnswer = async (question_id: string) => {
-    setAnswerChange(true);
     const { error } = await supabase
       .from('user_responses')
       .delete()
@@ -135,7 +177,6 @@ export default function SurveyForms() {
         ...prevAnswered,
         [question_id]: false, // Mark this question as not answered
       }));
-      setAnswerChange(false);
     }
   }
 
@@ -197,9 +238,16 @@ export default function SurveyForms() {
     })
   }, [questions, surveyTypes])
   
+  if(loading) {
+    return (
+      <div className="h-screen w-screen flex justify-center items-center">
+        <span className="loading loading-spinner"></span>
+      </div>
+    )
+  }
   return (
-    <div ref={scrollRef} className="flex flex-col justify-center items-center m-3">
-      <div className="border border-1 p-4 w-1/2 max-mobile:w-full max-tablet:w-full">
+    <div className="flex flex-col justify-center items-center m-3">
+      <div ref={scrollRef} className="border border-1 p-4 w-1/2 max-mobile:w-full max-tablet:w-full">
         <div className="text-xl font-medium">{currentSurveyType}</div>
         <div className="flex flex-col overflow-auto">
           {
@@ -208,22 +256,49 @@ export default function SurveyForms() {
               .map((question) => {
               return (
                 <div key={question.id} className="flex flex-col space-y-2 mt-4">
-                  <div className="flex flex-row items-center space-x-2">
-                    <div className="text-base font-medium">{question.question_text}</div>
+                  <div className="flex flex-row items-start space-x-2">
+                    <div className="text-base font-medium">{question.question_text} <div className="text-yellow-300">{question.question_type}</div></div>
                     {
                       answered[question.id] ?
                       <div onClick={() => handleChangeAnswer(question.id)} className="btn btn-sm text-xs font-light">Change Answer</div>
                       :
                       <div></div>
                     }
+                    {
+                      question.question_type == 'multi_select' &&
+                      <button
+                        className="btn btn-sm text-xs font-medium"
+                        onClick={() =>
+                          postMultiSelectAnswer({ question_id: question.id, response: selectedOption[question.id] || [] })
+                        }
+                        disabled={answered[question.id]}
+                      >
+                        Submit
+                      </button>
+                    }
                   </div>
                   {
-                    question.options.map((option, index) => (
-                      <div key={index} onClick={() => postSingleSelectAnswer({ question_id: question.id, response: [option] })} className="flex flex-row space-x-2 items-center">
-                        <div className={`w-4 h-4 rounded-full border border-1 ${selectedOption[question.id]?.includes(option) ? "bg-slate-200" : "bg-transparent"}`}></div>
-                        <div>{option}</div>
-                      </div>
-                    ))
+                    question.question_type == 'multi_select' ?
+                      question.options.map((option, index) => (
+                        <div>
+                          <label key={index}>
+                            <input
+                              type="checkbox"
+                              checked={selectedOption[question.id]?.includes(option) || false}
+                              onChange={() => toggleMultiSelectAnswer(question.id, option)}
+                              disabled={answered[question.id]}
+                            />
+                            {option}
+                          </label>
+                        </div>
+                      ))
+                        :
+                      question.options.map((option, index) => (
+                        <div key={index} onClick={() => postSingleSelectAnswer({ question_id: question.id, response: [option] })} className="flex flex-row space-x-2 items-center">
+                          <div className={`btn btn-circle btn-xs btn-primary border-1 border-secondary ${selectedOption[question.id]?.includes(option) ? "bg-slate-200" : "bg-transparent"}`}></div>
+                          <div>{option}</div>
+                        </div>
+                      ))
                   }
                 </div>
               )

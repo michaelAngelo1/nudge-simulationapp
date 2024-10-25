@@ -15,7 +15,7 @@ export interface Question {
   survey_type_name: string | null;
 }
 
-export interface SingleUserResponse {
+export interface UserResponse {
   question_id: string;
   response: string[];
 }
