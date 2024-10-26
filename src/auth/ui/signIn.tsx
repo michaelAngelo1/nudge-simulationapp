@@ -25,7 +25,7 @@ export default function SignIn() {
   }
 
   return (
-    <div className="h-screen flex justify-center items-start max-tablet:items-center max-mobile:items-center">
+    <div className="h-full flex justify-center items-start max-tablet:items-center max-mobile:items-center">
       <form onSubmit={handleSubmit(handleSignIn)} className="flex flex-col space-y-2 max-w-md p-4 max-tablet:w-4/5 max-mobile:w-11/12">
         <div className="text-xl text-center">Sign in to enter the study</div>
         <input {...register("email", { required: "This is required" })} className="input input-primary input-bordered text-xs" type="email" placeholder="Email" />

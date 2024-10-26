@@ -37,14 +37,14 @@ export default function SignUp() {
 
   if(loading) {
     return (
-      <div className="h-screen w-screen flex justify-center items-center">
+      <div className="h-full flex justify-center items-center">
         <span className="loading loading-spinner"></span>
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex justify-center items-start max-tablet:items-center max-mobile:items-center">
+    <div className="h-full flex justify-center items-start max-tablet:items-center max-mobile:items-center">
       <form onSubmit={handleSubmit(handleSignUp)} className="flex flex-col space-y-2 max-w-md p-4 max-tablet:w-4/5 max-mobile:w-11/12">
         <div className="text-xl">Create account to enter the study</div>
         <div className="text-xs">Don't worry. It will be quick :)</div>

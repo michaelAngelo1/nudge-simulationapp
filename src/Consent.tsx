@@ -60,8 +60,8 @@ export default function Consent() {
   
 
   return (
-    <div className="p-4 flex flex-col space-y-3 items-center">
-      <div className="h-80 w-full">
+    <div className="p-3 h-full flex flex-col space-y-3 justify-center items-center">
+      <div className="h-full w-full">
         <div className="overflow-y-auto h-full p-3 border border-1 border-grey-200 rounded-lg">
           <div className="space-y-1">
             <div className="text-xl font-bold">Research Study Consent Form</div>
@@ -222,9 +222,14 @@ export default function Consent() {
               </div>
             </div>  
           </div>
+          {
+            consentAgree && 
+            <div className="flex justify-center p-6">
+              <Link className='p-3 btn btn-primary text-base' to='auth/ui/signUp'>Let's start</Link>
+            </div>
+          }      
         </div>
       </div>
-      {consentAgree && <Link className='p-3 btn btn-primary text-base' to='auth/ui/signUp'>Let's start</Link>}      
     </div>
   )
 }
