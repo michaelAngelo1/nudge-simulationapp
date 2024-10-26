@@ -240,7 +240,7 @@ export default function SurveyForms() {
   
   if(loading) {
     return (
-      <div className="h-screen w-screen flex justify-center items-center">
+      <div className="h-screen flex justify-center items-center">
         <span className="loading loading-spinner"></span>
       </div>
     )
@@ -257,7 +257,7 @@ export default function SurveyForms() {
               return (
                 <div key={question.id} className="flex flex-col space-y-2 mt-4">
                   <div className="flex flex-row items-start space-x-2">
-                    <div className="text-base font-medium">{question.question_text} <div className="text-yellow-300">{question.question_type}</div></div>
+                    <div className="text-base font-medium">{question.question_text}</div>
                     {
                       answered[question.id] ?
                       <div onClick={() => handleChangeAnswer(question.id)} className="btn btn-sm text-xs font-light">Change Answer</div>
@@ -281,21 +281,34 @@ export default function SurveyForms() {
                     question.question_type == 'multi_select' ?
                       question.options.map((option, index) => (
                         <div>
-                          <label key={index}>
+                          <div className="flex flex-row items-center space-x-2" key={index}>
                             <input
                               type="checkbox"
+                              className="checkbox border-1 border-secondary"
                               checked={selectedOption[question.id]?.includes(option) || false}
                               onChange={() => toggleMultiSelectAnswer(question.id, option)}
                               disabled={answered[question.id]}
                             />
-                            {option}
-                          </label>
+                            {option.includes('sebutkan') 
+                              ?
+                              <div>
+                                sebutkan
+                              </div> 
+                              :
+                              <div>
+                                {option}
+                              </div>
+                            }
+                          </div>
                         </div>
                       ))
-                        :
+                      :
                       question.options.map((option, index) => (
                         <div key={index} onClick={() => postSingleSelectAnswer({ question_id: question.id, response: [option] })} className="flex flex-row space-x-2 items-center">
-                          <div className={`btn btn-circle btn-xs btn-primary border-1 border-secondary ${selectedOption[question.id]?.includes(option) ? "bg-slate-200" : "bg-transparent"}`}></div>
+                          <button 
+                              // disabled={answered[question.id]} 
+                              className={`btn btn-circle btn-xs btn-ghost border-1 border-secondary ${selectedOption[question.id]?.includes(option) ? "bg-slate-200" : "bg-transparent"} ${answered[question.id] && "border-1 border-white"}`}>
+                            </button>
                           <div>{option}</div>
                         </div>
                       ))
