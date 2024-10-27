@@ -117,7 +117,6 @@ export default function SurveyForms() {
     if (data) {
       console.log("Multi-select response saved successfully:", data);
       handleQuestionAnswered(question_id, true);
-      setMultiSelectLoading(false);
     }
     if (error) {
       console.log("Error submitting multi-select response:", error);
@@ -139,29 +138,29 @@ export default function SurveyForms() {
     });
   };
 
-  useEffect(() => {
-    // Only proceed if there's a question ID to submit
-    const questionId = Object.keys(selectedOption).find(id => !answered[id]);
-    if (!questionId) return;
+  // useEffect(() => {
+  //   // Only proceed if there's a question ID to submit
+  //   const questionId = Object.keys(selectedOption).find(id => !answered[id]);
+  //   if (!questionId) return;
 
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    console.log('SELECTED OPTION ON USEEFFECT: ', selectedOption);
-    setMultiSelectLoading(true);
-    debounceTimer.current = setTimeout(() => {
-      postMultiSelectAnswer({
-        question_id: questionId,
-        response: selectedOption[questionId] || [],
-      });
-    }, 5000);
+  //   if (debounceTimer.current) {
+  //     clearTimeout(debounceTimer.current);
+  //   }
+  //   console.log('SELECTED OPTION ON USEEFFECT: ', selectedOption);
+  //   setMultiSelectLoading(true);
+  //   debounceTimer.current = setTimeout(() => {
+  //     postMultiSelectAnswer({
+  //       question_id: questionId,
+  //       response: selectedOption[questionId] || [],
+  //     });
+  //   }, 5000);
 
-    return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-    };
-  }, [selectedOption]);
+  //   return () => {
+  //     if (debounceTimer.current) {
+  //       clearTimeout(debounceTimer.current);
+  //     }
+  //   };
+  // }, [selectedOption]);
   
   const fetchCurrentUserResponses = async () => {
     setLoading(true); 
@@ -317,10 +316,10 @@ export default function SurveyForms() {
                       :
                       <div></div>
                     }
-                    {
-                      question.question_type == 'multi_select' && multiSelectLoading &&  <span className="loading loading-spinner"></span>
-                    }
                     {/* {
+                      question.question_type == 'multi_select' && multiSelectLoading &&  <span className="loading loading-spinner"></span>
+                    } */}
+                    {
                       question.question_type == 'multi_select' &&
                       <button
                       className="btn btn-sm text-xs font-medium"
@@ -331,7 +330,7 @@ export default function SurveyForms() {
                       >
                       Submit
                       </button>
-                      } */}
+                    }
                   </div>
                   {
                     question.question_type == 'multi_select' ?
@@ -344,10 +343,10 @@ export default function SurveyForms() {
                               checked={selectedOption[question.id]?.includes(option) || false}
                               onChange={
                                 () => {
-                                  toggleMultiSelectAnswer(question.id, option);
                                   if(option.includes('sebutkan')) {
                                     setSebutkan(!sebutkan);
                                   }
+                                  toggleMultiSelectAnswer(question.id, option);
                                 }
                               }
                               disabled={answered[question.id]}
