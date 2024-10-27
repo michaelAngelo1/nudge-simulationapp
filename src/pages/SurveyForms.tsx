@@ -20,7 +20,12 @@ export default function SurveyForms() {
   const [selectedOption, setSelectedOption] = useState<{[key: string]: string[] }>({}); 
   const [answered, setAnswered] = useState<{[key: string]: boolean}>({});
   const [loading, setLoading] = useState(false);
+  const [sebutkan, setSebutkan] = useState(false);
 
+  // sebutkanAnswer mapped by question_id
+  const [sebutkanAnswer, setSebutkanAnswer] = useState<{[key: string]: string}>({});
+
+  // scroll ref every next and prev
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   async function fetchQuestions() {
@@ -84,16 +89,24 @@ export default function SurveyForms() {
       return;
     }
 
+    const sebutkanResponse = sebutkanAnswer[question_id] ? [sebutkanAnswer[question_id]] : [];
+    console.log('sebutkan response: ', sebutkanResponse);
+    const finalResponse = [...response, ...sebutkanResponse];
+    console.log('final response: ', finalResponse);
+
+    const cleanResponse = finalResponse.filter(item => item !== 'Produk keuangan lainnya (Harap sebutkan)');
+    console.log('clean response: ', cleanResponse);
+
     setSelectedOption((prevSelectedOption) => ({
       ...prevSelectedOption,
-      [question_id]: response,
+      [question_id]: cleanResponse,
     }));
 
     const { data, error } = await supabase.from("user_responses").upsert(
       {
         user_id: userId,
         question_id: question_id,
-        response: response,
+        response: cleanResponse,
       }
     ).select();
 
@@ -147,6 +160,7 @@ export default function SurveyForms() {
           console.log('matching questions');
         }
       }
+      setSebutkan(true);
       setLoading(false);
     }
     if(error) {
@@ -177,6 +191,12 @@ export default function SurveyForms() {
         ...prevAnswered,
         [question_id]: false, // Mark this question as not answered
       }));
+
+      // biar ga ketrigger kebalik2 statenya
+      setSebutkan(false);
+
+      // kalo change answer, kosongin si sebutkan
+      // setSebutkanAnswer({});
     }
   }
 
@@ -286,13 +306,31 @@ export default function SurveyForms() {
                               type="checkbox"
                               className="checkbox border-1 border-secondary"
                               checked={selectedOption[question.id]?.includes(option) || false}
-                              onChange={() => toggleMultiSelectAnswer(question.id, option)}
+                              onChange={
+                                () => {
+                                  toggleMultiSelectAnswer(question.id, option);
+                                  console.log('chosen: ', option);
+                                  if(option.includes('sebutkan')) {
+                                    setSebutkan(!sebutkan);
+                                  }
+                                }
+                              }
                               disabled={answered[question.id]}
                             />
                             {option.includes('sebutkan') 
                               ?
                               <div>
-                                sebutkan
+                                {
+                                  sebutkan ?
+                                    <input 
+                                      type="text" 
+                                      className="p-1"
+                                      value={sebutkanAnswer[question.id]}
+                                      onChange={(e) => setSebutkanAnswer((prev) => ({ ...prev, [question.id]: e.target.value}))}
+                                    />
+                                  :
+                                    "Produk keuangan lain (Harap sebutkan)"
+                                }
                               </div> 
                               :
                               <div>
