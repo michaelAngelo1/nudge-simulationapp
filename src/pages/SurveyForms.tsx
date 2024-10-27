@@ -25,6 +25,10 @@ export default function SurveyForms() {
   // sebutkanAnswer mapped by question_id
   const [sebutkanAnswer, setSebutkanAnswer] = useState<{[key: string]: string}>({});
 
+  // debounce timer for multi_select submissions
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const [multiSelectLoading, setMultiSelectLoading] = useState(false);
+
   // scroll ref every next and prev
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -113,6 +117,7 @@ export default function SurveyForms() {
     if (data) {
       console.log("Multi-select response saved successfully:", data);
       handleQuestionAnswered(question_id, true);
+      setMultiSelectLoading(false);
     }
     if (error) {
       console.log("Error submitting multi-select response:", error);
@@ -121,22 +126,49 @@ export default function SurveyForms() {
 
   // Toggle Multi-Select Answer
   const toggleMultiSelectAnswer = (question_id: string, option: string) => {
+    console.log('toggle answer: ', option);
     setSelectedOption((prevSelectedOption) => {
       const currentSelection = prevSelectedOption[question_id] || [];
       const newSelection = currentSelection.includes(option)
         ? currentSelection.filter((item) => item !== option)
         : [...currentSelection, option];
+      console.log('current selection: ', currentSelection);
+      console.log('new selection type: ', newSelection);
 
       return { ...prevSelectedOption, [question_id]: newSelection };
     });
   };
 
+  useEffect(() => {
+    // Only proceed if there's a question ID to submit
+    const questionId = Object.keys(selectedOption).find(id => !answered[id]);
+    if (!questionId) return;
+
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    console.log('SELECTED OPTION ON USEEFFECT: ', selectedOption);
+    setMultiSelectLoading(true);
+    debounceTimer.current = setTimeout(() => {
+      postMultiSelectAnswer({
+        question_id: questionId,
+        response: selectedOption[questionId] || [],
+      });
+    }, 5000);
+
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, [selectedOption]);
+  
   const fetchCurrentUserResponses = async () => {
-    setLoading(true);
+    setLoading(true); 
     const { data, error } = await supabase
-      .from('user_responses')
-      .select('*')
-      .eq('user_id', userId)
+    .from('user_responses')
+    .select('*')
+    .eq('user_id', userId)
     
     if(data) {
       console.log('responses data: ', data);
@@ -150,7 +182,7 @@ export default function SurveyForms() {
           [data.question_id]: true,
         }));
       };
-
+      
       for (const response of data) {
         const matchingQuestion = questions.find(
           (question) => question.id === response.question_id
@@ -167,13 +199,13 @@ export default function SurveyForms() {
       console.log('error while fetch responses', error);
     }
   }
-
+  
   const handleChangeAnswer = async (question_id: string) => {
     const { error } = await supabase
-      .from('user_responses')
-      .delete()
-      .eq('question_id', question_id)
-      .eq('user_id', userId)
+    .from('user_responses')
+    .delete()
+    .eq('question_id', question_id)
+    .eq('user_id', userId)
     
     if(error) {
       console.log('error while change answer', error)
@@ -201,6 +233,7 @@ export default function SurveyForms() {
   }
 
   const handleQuestionAnswered = (question_id: string, isAnswered: boolean) => {
+    console.log('masuk handle question answered');
     setAnswered((prevAnswered) => ({
       ...prevAnswered,
       [question_id]: isAnswered, // Set the selected option for the corresponding question
@@ -285,22 +318,25 @@ export default function SurveyForms() {
                       <div></div>
                     }
                     {
+                      question.question_type == 'multi_select' && multiSelectLoading &&  <span className="loading loading-spinner"></span>
+                    }
+                    {/* {
                       question.question_type == 'multi_select' &&
                       <button
-                        className="btn btn-sm text-xs font-medium"
-                        onClick={() =>
-                          postMultiSelectAnswer({ question_id: question.id, response: selectedOption[question.id] || [] })
-                        }
-                        disabled={answered[question.id]}
+                      className="btn btn-sm text-xs font-medium"
+                      onClick={() =>
+                      postMultiSelectAnswer({ question_id: question.id, response: selectedOption[question.id] || [] })
+                      }
+                      disabled={answered[question.id]}
                       >
-                        Submit
+                      Submit
                       </button>
-                    }
+                      } */}
                   </div>
                   {
                     question.question_type == 'multi_select' ?
-                      question.options.map((option, index) => (
-                        <div>
+                    question.options.map((option, index) => (
+                      <div>
                           <div className="flex flex-row items-center space-x-2" key={index}>
                             <input
                               type="checkbox"
@@ -309,7 +345,6 @@ export default function SurveyForms() {
                               onChange={
                                 () => {
                                   toggleMultiSelectAnswer(question.id, option);
-                                  console.log('chosen: ', option);
                                   if(option.includes('sebutkan')) {
                                     setSebutkan(!sebutkan);
                                   }
