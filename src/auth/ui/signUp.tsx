@@ -3,7 +3,6 @@ import supabase from "../../database/supabaseClient";
 import { AuthProps } from "../../interface/AuthInterface";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import ReactLoading from "react-loading";
 
 
 export default function SignUp() {
@@ -27,7 +26,9 @@ export default function SignUp() {
       });
 
       if(error) {
-        throw new Error("Error while signing up");
+        alert('Error while signing up. Account may have been registered or Check your internet connection.');
+        setLoading(false);
+        return;
       } else {
         setLoading(false);
         console.log('Success signing up');

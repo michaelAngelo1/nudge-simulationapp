@@ -1,13 +1,11 @@
 import supabase from "../database/supabaseClient"
 import { Link, useNavigate } from "react-router-dom";
-import { useSession } from "../context/SessionContext";
 import { useGetUser } from "../hooks/useGetUser";
-import { useEffect, useState } from "react";
 
 export default function SurveyHome() {
   
   // const { user } = useSession();
-  const { user, loading, error } = useGetUser();
+  const { user, loading } = useGetUser();
   const navigate = useNavigate();
 
   async function userSignOut() {
