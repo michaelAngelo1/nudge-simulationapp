@@ -2,14 +2,17 @@ import { useForm } from "react-hook-form";
 import supabase from "../../database/supabaseClient";
 import { AuthProps } from "../../interface/AuthInterface";
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 
 export default function SignIn() {
 
   const { register, handleSubmit } = useForm<AuthProps>();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   async function handleSignIn(data: AuthProps) {
+    setLoading(true);
     let { error } = await
       supabase.auth.signInWithPassword({
         email: data.email,
@@ -18,12 +21,24 @@ export default function SignIn() {
 
       if(error) {
         throw new Error("Error while signing up");
+      } else if(data.email.includes('admin')) {
+        console.log('admin signin success');
+        navigate('/admin-page');
       } else {
+        setLoading(false);
         console.log('Success signing in');
         navigate('/surveyHome')
       }
   }
 
+
+  if(loading) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <span className="loading loading-spinner"></span>
+      </div>
+    )
+  }
   return (
     <div className="h-full flex justify-center items-start max-tablet:items-center max-mobile:items-center">
       <form onSubmit={handleSubmit(handleSignIn)} className="flex flex-col space-y-2 max-w-md p-4 max-tablet:w-4/5 max-mobile:w-11/12">

@@ -5,6 +5,8 @@ import Consent from './Consent'
 import SurveyHome from './pages/SurveyHome'
 import SurveyForms from './pages/SurveyForms'
 import { SessionProvider } from './context/SessionContext'
+import SimulationPage from './pages/SimulationPage'
+import AdminPage from './pages/AdminPage'
 
 function App() {
 
@@ -20,6 +22,8 @@ function App() {
           <Route path='auth/ui/signUp' element={<SignUp/>}/>
           <Route path='surveyHome' element={<SurveyHome/>}/>
           <Route path='surveyForms' element={<SurveyForms/>}/>
+          <Route path='simulation' element={<SimulationPage/>}/>
+          <Route path='admin-page' element={<AdminPage/>}/>
         </Routes>
       </BrowserRouter>
     </SessionProvider>

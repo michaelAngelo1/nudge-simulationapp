@@ -3,6 +3,7 @@ import supabase from "../database/supabaseClient"
 import { Question, SurveyType, UserResponse } from "../interface/SurveyInterface";
 import { useGetUser } from "../hooks/useGetUser";
 import { useSession } from "../context/SessionContext";
+import { Link } from "react-router-dom";
 
 // metode jawab: pilih jawaban, trigger opsi "change answer" enabled,
 // change_answer onclick -> delete record jawaban from that question
@@ -26,8 +27,8 @@ export default function SurveyForms() {
   const [sebutkanAnswer, setSebutkanAnswer] = useState<{[key: string]: string}>({});
 
   // debounce timer for multi_select submissions
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-  const [multiSelectLoading, setMultiSelectLoading] = useState(false);
+  // const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  // const [multiSelectLoading, setMultiSelectLoading] = useState(false);
 
   // scroll ref every next and prev
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -131,7 +132,7 @@ export default function SurveyForms() {
       const newSelection = currentSelection.includes(option)
         ? currentSelection.filter((item) => item !== option)
         : [...currentSelection, option];
-      console.log('current selection: ', currentSelection);
+      // console.log('current selection: ', currentSelection);
       console.log('new selection type: ', newSelection);
 
       return { ...prevSelectedOption, [question_id]: newSelection };
@@ -180,6 +181,10 @@ export default function SurveyForms() {
           ...prevAnswered,
           [data.question_id]: true,
         }));
+        // setSebutkanAnswer((prevSebutkan) => ({
+        //   ...prevSebutkan,
+        //   [data.question_id]: 
+        // }))
       };
       
       for (const response of data) {
@@ -191,7 +196,9 @@ export default function SurveyForms() {
           console.log('matching questions');
         }
       }
-      setSebutkan(false);
+
+      // if true, this sets to input field, else a harap sebutkan string
+      setSebutkan(true);
       setLoading(false);
     }
     if(error) {
@@ -342,7 +349,9 @@ export default function SurveyForms() {
                               <input
                                 type="checkbox"
                                 className="checkbox border-1 border-secondary"
-                                checked={selectedOption[question.id]?.includes(option) || false}
+                                checked={
+                                  selectedOption[question.id]?.includes(option) || false
+                                }
                                 onChange={
                                   () => {
                                     if(option.includes('sebutkan')) {
@@ -398,7 +407,7 @@ export default function SurveyForms() {
           <button disabled={index == 0 && true} onClick={handlePrevious} className="btn btn-secondary text-sm font-medium">Previous</button>
           <button disabled={index == surveyTypes.length - 1 && true} onClick={handleNext} className="btn btn-secondary text-sm font-medium">Next</button>
         </div>
-        {index === surveyTypes.length - 1 && <button className="btn btn-primary text-sm font-medium">Submit. Go to simulation</button>}
+        {index === surveyTypes.length - 1 && <Link to='/simulation' className="btn btn-primary text-sm font-medium">Submit. Go to simulation</Link>}
       </div>
     </div>
   )
