@@ -191,7 +191,7 @@ export default function SurveyForms() {
           console.log('matching questions');
         }
       }
-      setSebutkan(true);
+      setSebutkan(false);
       setLoading(false);
     }
     if(error) {
@@ -289,6 +289,8 @@ export default function SurveyForms() {
       })
     })
   }, [questions, surveyTypes])
+
+  console.log('sebutkan state: ', sebutkan);
   
   if(loading) {
     return (
@@ -321,59 +323,59 @@ export default function SurveyForms() {
                     } */}
                     {
                       question.question_type == 'multi_select' &&
-                      <button
-                      className="btn btn-sm text-xs font-medium"
-                      onClick={() =>
-                      postMultiSelectAnswer({ question_id: question.id, response: selectedOption[question.id] || [] })
-                      }
-                      disabled={answered[question.id]}
-                      >
-                      Submit
-                      </button>
+                        <button
+                          className="btn btn-sm text-xs font-medium"
+                          onClick={() =>
+                            postMultiSelectAnswer({ question_id: question.id, response: selectedOption[question.id] || [] })
+                          }
+                          disabled={answered[question.id]}
+                        >
+                          Submit
+                        </button>
                     }
                   </div>
                   {
                     question.question_type == 'multi_select' ?
-                    question.options.map((option, index) => (
-                      <div>
-                          <div className="flex flex-row items-center space-x-2" key={index}>
-                            <input
-                              type="checkbox"
-                              className="checkbox border-1 border-secondary"
-                              checked={selectedOption[question.id]?.includes(option) || false}
-                              onChange={
-                                () => {
-                                  if(option.includes('sebutkan')) {
-                                    setSebutkan(!sebutkan);
+                      question.options.map((option, index) => (
+                        <div>
+                            <div className="flex flex-row items-center space-x-2" key={index}>
+                              <input
+                                type="checkbox"
+                                className="checkbox border-1 border-secondary"
+                                checked={selectedOption[question.id]?.includes(option) || false}
+                                onChange={
+                                  () => {
+                                    if(option.includes('sebutkan')) {
+                                      setSebutkan(!sebutkan);
+                                    }
+                                    toggleMultiSelectAnswer(question.id, option);
                                   }
-                                  toggleMultiSelectAnswer(question.id, option);
                                 }
+                                disabled={answered[question.id]}
+                              />
+                              {option.includes('sebutkan') 
+                                ?
+                                <div>
+                                  {
+                                    sebutkan ?
+                                      <input 
+                                        type="text" 
+                                        className="p-1"
+                                        value={sebutkanAnswer[question.id]}
+                                        onChange={(e) => setSebutkanAnswer((prev) => ({ ...prev, [question.id]: e.target.value}))}
+                                      />
+                                    :
+                                      "Produk keuangan lain (Harap sebutkan)"
+                                  }
+                                </div> 
+                                :
+                                <div>
+                                  {option}
+                                </div>
                               }
-                              disabled={answered[question.id]}
-                            />
-                            {option.includes('sebutkan') 
-                              ?
-                              <div>
-                                {
-                                  sebutkan ?
-                                    <input 
-                                      type="text" 
-                                      className="p-1"
-                                      value={sebutkanAnswer[question.id]}
-                                      onChange={(e) => setSebutkanAnswer((prev) => ({ ...prev, [question.id]: e.target.value}))}
-                                    />
-                                  :
-                                    "Produk keuangan lain (Harap sebutkan)"
-                                }
-                              </div> 
-                              :
-                              <div>
-                                {option}
-                              </div>
-                            }
+                            </div>
                           </div>
-                        </div>
-                      ))
+                        ))
                       :
                       question.options.map((option, index) => (
                         <div key={index} onClick={() => postSingleSelectAnswer({ question_id: question.id, response: [option] })} className="flex flex-row space-x-2 items-center">
