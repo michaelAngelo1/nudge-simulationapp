@@ -129,6 +129,8 @@ export default function SimulationPage() {
         )
       ) {
         setRekomendasi('Deposito'); // add Tabungan as an alternative
+      } else {
+        setRekomendasi('Tabungan');
       }
     }
   }
@@ -139,7 +141,7 @@ export default function SimulationPage() {
     const { data, error } = await supabase
       .from('records')
       .select('*')
-    
+    console.log('MASUK GET RECORDS');
     if(error) {
       console.log('Error while fetching records', error);
     }
@@ -222,7 +224,7 @@ export default function SimulationPage() {
     }
   }
 
-  const postTimeSpent = async ({ user_id, page_id, enter_time, exit_time, time_spent } : UserPageVisits) => {
+  const postTimeSpent = async ({ user_id, page_id, enter_time, exit_time } : UserPageVisits) => {
     console.log('Page ID: ', page_id);
 
     const enterTimeDate = new Date(enter_time);
@@ -273,7 +275,8 @@ export default function SimulationPage() {
   //   fetchListPage();
   // }, [])
   
-  
+  console.log('REKOMENDASI');
+  console.log('REKOMENDASI 2: ', rekomendasi);
   
   return (
     <div className="p-3 flex flex-col space-y-3">
@@ -299,6 +302,7 @@ export default function SimulationPage() {
       {/* <div>
         {rekomendasi.length > 0 && rekomendasi}
       </div> */}
+      <div className="text-xl font-medium max-tablet:text-center max-mobile:text-center">Anda sudah membeli</div>
       <div className="text-xl font-medium max-tablet:text-center max-mobile:text-center">Rekomendasi untuk Anda</div>
       <div className="flex flex-wrap gap-3 max-tablet:justify-center max-mobile:justify-center">
         {

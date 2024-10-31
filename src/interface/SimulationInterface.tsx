@@ -20,3 +20,9 @@ export interface UserPageVisits {
   exit_time: number;
   time_spent: number;
 }
+
+export interface UserPurchase {
+  user_id: string;
+  name_purchased: string;
+  percentage_purchased: number | "";
+}

@@ -1,8 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Pages, Records } from "../interface/SimulationInterface";
+import { Pages, Records, UserPageVisits, UserPurchase } from "../interface/SimulationInterface";
 import { useEffect, useRef, useState } from "react";
 import supabase from "../database/supabaseClient";
 import { useGetUser } from "../hooks/useGetUser";
+import Modal from 'react-modal';
 
 export default function SimulationDetailPage() {
 
@@ -10,6 +11,35 @@ export default function SimulationDetailPage() {
   const { ...record } = recordProps.state as Records 
   const navigate = useNavigate();
   const { userId } = useGetUser();
+  const [modalPurchase, setModalPurchase] = useState(false);
+  const [modalSuccess, setModalSuccess] = useState(false);
+  const [inputValue, setInputValue] = useState<number | ''>('');
+
+  // handle user purchase
+  const handleUserPurchase = async ({ name_purchased, percentage_purchased } : UserPurchase) => {
+    console.log('user beli');
+
+    const { error } = await supabase
+      .from('user_purchases')
+      .insert({
+        user_id: userId,
+        name_purchased: name_purchased,
+        percentage_purchased: percentage_purchased
+      });
+    
+    if(error) {
+      console.log('error while user purchase: ', error);
+    } else {
+      console.log('successful product purchase: ');
+      setModalSuccess(true);
+      setModalPurchase(false);
+    }
+  }
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setInputValue(value ? parseInt(value) : ''); // Convert to number or keep as empty
+  };
 
   const [detailPageData, setDetailPageData] = useState<Pages>();
   const fetchDetailPage = async () => {
@@ -27,7 +57,7 @@ export default function SimulationDetailPage() {
     }
   }
 
-  const postTimeSpent = async ({ user_id, page_id, record_id, enter_time, exit_time, time_spent } : UserPageVisits) => {
+  const postTimeSpent = async ({ user_id, page_id, record_id, enter_time, exit_time } : UserPageVisits) => {
     console.log('Page ID: ', page_id);
 
     const enterTimeDate = new Date(enter_time);
@@ -53,12 +83,10 @@ export default function SimulationDetailPage() {
   }
 
   const startTimeRef = useRef<number>(0);
-
   useEffect(() => {
     fetchDetailPage();
   }, [startTimeRef])
   
-
   useEffect(() => {
     startTimeRef.current = Date.now();
 
@@ -95,9 +123,97 @@ export default function SimulationDetailPage() {
       <div className="text-base">{record.record_description}</div>
       <div className="flex flex-col space-y-3 max-tablet:flex-row max-tablet:items-center max-tablet:space-x-3 max-mobile:space-x-3 max-mobile:flex-row max-mobile:items-center">
         <div className="font-medium">Tertarik membeli produk ini?</div>
-        <button className="btn btn-primary w-32 text-slate-100">Beli sekarang</button>
+        <button onClick={() => setModalPurchase(true)} className="btn btn-primary w-32 text-slate-100">Beli sekarang</button>
         <button onClick={() => navigate('/simulation')} className="btn btn-shadow w-32 ">Kembali</button>
       </div>    
+      <Modal
+        ariaHideApp={false}
+        isOpen={modalPurchase}
+        onRequestClose={() => setModalPurchase(false)}
+        style={modalStyles}
+      >
+        <div className="bg-slate-100 rounded-lg shadow-lg p-6 max-w-md mx-auto space-y-4">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-4 border-b">
+            <h2 className="text-lg font-semibold text-gray-700">Confirm Purchase</h2>
+            <button
+              onClick={() => setModalPurchase(false)}
+              className="btn btn-circle btn-ghost text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="text-gray-700">Specify your % purchase of {record.record_title}</div>
+          <input 
+            onChange={handleChange}
+            value={inputValue}
+            type='number' 
+            className="input input-bordered w-full max-w-xs bg-slate-100 input-secondary text-gray-700" 
+          />
+          <div className="flex justify-end space-x-2 pt-4">
+            <button
+              className="btn btn-ghost"
+              onClick={() => setModalPurchase(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="btn btn-primary text-slate-100"
+              onClick={
+                () => handleUserPurchase({ user_id: userId, name_purchased: record.record_name, percentage_purchased: inputValue })
+              }
+            >
+              Purchase
+            </button>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        ariaHideApp={false}
+        isOpen={modalSuccess}
+        onRequestClose={() => setModalSuccess(false)}
+        style={modalStyles}
+      >
+        <div className="bg-slate-100 rounded-lg shadow-lg p-6 max-w-md mx-auto space-y-4">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-4 border-b">
+            <h2 className="text-lg font-semibold text-gray-700">Successful Purchase</h2>
+            <button
+              onClick={() => setModalPurchase(false)}
+              className="btn btn-circle btn-ghost text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="text-gray-700">Congrats! You successfully purchased {record.record_title}</div>
+          <div className="flex justify-end space-x-2 pt-4">
+            <button
+              className="btn btn-secondary"
+              onClick={() => setModalSuccess(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
+
+const modalStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    padding: '0',
+    borderRadius: '0.5rem', // Rounded corners
+  },
+  overlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dark semi-transparent background
+  },
+};
