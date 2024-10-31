@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import supabase from "../database/supabaseClient";
 import { useGetUser } from "../hooks/useGetUser";
-import { Records } from "../interface/SimulationInterface";
+import { Pages, Records, UserPageVisits } from "../interface/SimulationInterface";
 import RecordCard from "../components/RecordCard";
 import RelatedRecordCard from "../components/RelatedRecordCard";
 
 export default function SimulationPage() {
 
+  const [loading, setLoading] = useState(false);
   const [balance, setBalance] = useState<string>();
   const [dummyBalance, setDummyBalance] = useState<number>();
   const { userId } = useGetUser();
@@ -62,7 +63,7 @@ export default function SimulationPage() {
   function getRulebasedRecommendation() { 
     let responses: string[] = [];
     if(ruleBasedResponses && ruleBasedResponses.length > 0) {
-      console.log('RULE BASED RESPONSES: ', ruleBasedResponses);
+      // console.log('RULE BASED RESPONSES: ', ruleBasedResponses);
       ruleBasedResponses.map((response) => {
         if(response) {
           responses.push(response[0]);
@@ -70,7 +71,7 @@ export default function SimulationPage() {
       })
     }
     if(responses && responses.length > 0) {
-      console.log('Array of rulebased responses: ', responses);
+      // console.log('Array of rulebased responses: ', responses);
 
       // Rule-based Conditions below
       if(
@@ -134,6 +135,7 @@ export default function SimulationPage() {
   
   const [records, setRecords] = useState<Records[]>([]);
   async function getRecords() {
+    setLoading(true);
     const { data, error } = await supabase
       .from('records')
       .select('*')
@@ -144,6 +146,7 @@ export default function SimulationPage() {
     if(data) {
       console.log('response records: ', data);
       setRecords(data);
+      setLoading(false);
     }
   }
 
@@ -160,7 +163,7 @@ export default function SimulationPage() {
     }
 
     if(data) {
-      console.log('question id: ', data[0].question_id, 'data rule base: ', data[0].response);
+      // console.log('question id: ', data[0].question_id, 'data rule base: ', data[0].response);
       setRuleBasedResponses((prevItem) => [...prevItem, data[0].response]);
     }
   }
@@ -170,20 +173,19 @@ export default function SimulationPage() {
   }, [ruleBasedResponses])
 
   useEffect(() => {
+    fetchListPage();
     if(rekomendasi && rekomendasi.length > 0) {
       getRecords();
     }
   }, [rekomendasi])
   
-  
-
   useEffect(() => {
     if(userId && ruleBasedQuestionIds && !hasFetchedResponses.current) {
       hasFetchedResponses.current = true;
       let i = 0;
       for(const ruleBased of ruleBasedQuestionIds) {
         i++;
-        console.log(ruleBased.rule_based_id);
+        // console.log(ruleBased.rule_based_id);
         getResponseFirstRuleBased(ruleBased.rule_based_id);
       }
     }
@@ -199,17 +201,86 @@ export default function SimulationPage() {
   useEffect(() => {
     if(balance && balance.length > 0) {
       const newBalance = getUpperBound(balance);
-      console.log('new balance after conversion: ', newBalance);
+      // console.log('new balance after conversion: ', newBalance);
       setDummyBalance(newBalance * 24000000);
     }
   }, [balance])
 
+  const [listPageData, setListPageData] = useState<Pages>();
+  const fetchListPage = async () => {
+    const { data, error } = await supabase
+      .from('pages')
+      .select('*')
+      .eq('page_name', 'List Page')
+    
+    if(error) {
+      console.log('error while fetching list page: ', error);
+    }
+    if(data) {
+      // console.log('response list page: ', data[0]);
+      setListPageData(data[0]);
+    }
+  }
+
+  const postTimeSpent = async ({ user_id, page_id, enter_time, exit_time, time_spent } : UserPageVisits) => {
+    console.log('Page ID: ', page_id);
+
+    const enterTimeDate = new Date(enter_time);
+    const exitTimeDate = new Date(exit_time);
+    
+    const { data, error } = await supabase
+      .from('user_page_visits')
+      .insert({
+        user_id: user_id,
+        page_id: page_id,
+        enter_time: enterTimeDate,
+        exit_time: exitTimeDate,
+        // time_spent: time_spent,
+      });
+    
+    if(error) {
+      console.log('error while posting page time spent: ', error);
+    }
+    if(data) {
+      console.log('SUCCESS PAGE TIME SPENT: ', data);
+    }
+  }
+
+  const startTimeRef = useRef<number>(0);
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+
+    return () => {
+      const leaveTime = Date.now();
+      const timeSpent = (leaveTime - startTimeRef.current) / 1000;
+
+      if(listPageData && listPageData.id) {
+        if(timeSpent > 0.5) {
+          console.log(`Time Spent on Simulation Page: ${timeSpent.toFixed(2)} seconds`)
+          postTimeSpent({
+            user_id: userId,
+            page_id: listPageData.id,
+            enter_time: startTimeRef.current,
+            exit_time: leaveTime,
+            time_spent: timeSpent
+          })
+        }
+      }
+    }
+  }, [startTimeRef, listPageData])
+
+  // useEffect(() => {
+  //   fetchListPage();
+  // }, [])
+  
+  
+  
   return (
     <div className="p-3 flex flex-col space-y-3">
       <div className="p-3 bg-info opacity-80 max-w-full">
         <div className="flex flex-col">
           <div className="text-center font-medium text-white">Ini adalah sebuah simulasi</div>
-          <div className="text-center font-light text-white">Bagaimana Anda mengelola uang anda pada produk bank berikut ini.</div>
+          <div className="text-center font-light text-white">Bagaimana Anda mengelola uang Anda pada produk bank berikut ini.</div>
         </div>
       </div>
       <div className="font-bold text-xl">Saldo Anda: {dummyBalance ? formatCurrency(dummyBalance) : 'Calculating balance...'}</div>
@@ -235,8 +306,8 @@ export default function SimulationPage() {
           records.length > 0 &&
           records
             .filter((record) => record.record_name.includes(rekomendasi))
-            .map((record) => (
-            <RecordCard {...record}/>
+            .map((record, index) => (
+            <RecordCard key={index} {...record}/>
           ))
         }
       </div>
@@ -247,8 +318,8 @@ export default function SimulationPage() {
           records.length > 0 &&
           records
             .filter((record) => !record.record_name.includes(rekomendasi))
-            .map((record) => (
-            <RelatedRecordCard {...record}/>
+            .map((record, index) => (
+            <RelatedRecordCard key={index} {...record}/>
           ))
         }
       </div>

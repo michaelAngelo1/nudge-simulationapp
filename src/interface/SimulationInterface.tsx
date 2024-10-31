@@ -13,5 +13,10 @@ export interface Pages {
 }
 
 export interface UserPageVisits {
-  // please fill later
+  user_id: string;
+  page_id: string;
+  record_id?: string;
+  enter_time: number;
+  exit_time: number;
+  time_spent: number;
 }
