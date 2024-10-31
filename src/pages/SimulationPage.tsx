@@ -212,7 +212,7 @@ export default function SimulationPage() {
           <div className="text-center font-light text-white">Bagaimana Anda mengelola uang anda pada produk bank berikut ini.</div>
         </div>
       </div>
-      <div className="font-semibold text-xl">Saldo Anda: {dummyBalance ? formatCurrency(dummyBalance) : 'Calculating balance...'}</div>
+      <div className="font-bold text-xl">Saldo Anda: {dummyBalance ? formatCurrency(dummyBalance) : 'Calculating balance...'}</div>
       {/* <div className="px-3">
         <div className="font-medium">Your profile is</div>
         <div className="flex flex-col">
@@ -228,6 +228,7 @@ export default function SimulationPage() {
       {/* <div>
         {rekomendasi.length > 0 && rekomendasi}
       </div> */}
+      <div className="text-xl font-medium max-tablet:text-center max-mobile:text-center">Rekomendasi untuk Anda</div>
       <div className="flex flex-wrap gap-3 max-tablet:justify-center max-mobile:justify-center">
         {
           records && 
@@ -239,7 +240,7 @@ export default function SimulationPage() {
           ))
         }
       </div>
-      <div className="text-xl font-medium max-tablet:text-center max-mobile:text-center">Related products</div>
+      <div className="text-xl font-medium max-tablet:text-center max-mobile:text-center">Produk terkait</div>
       <div className="flex flex-wrap gap-3 max-tablet:justify-center max-mobile:justify-center">
         {
           records && 
