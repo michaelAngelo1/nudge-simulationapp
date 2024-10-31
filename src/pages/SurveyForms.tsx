@@ -315,89 +315,86 @@ export default function SurveyForms() {
             questions
               .filter((question) => question.survey_type_name == currentSurveyType)
               .map((question) => {
-              return (
-                <div key={question.id} className="flex flex-col space-y-2 mt-4">
-                  <div className="flex flex-row items-start space-x-2">
-                    <div className="text-base font-medium">{question.question_text}</div>
+                return (
+                  <div key={question.id} className="flex flex-col space-y-2 mt-4">
+                    <div className="flex flex-row items-start space-x-2">
+                      <div className="text-base font-medium">{question.question_text}</div>
+                      {
+                        answered[question.id] ?
+                        <div onClick={() => handleChangeAnswer(question.id)} className="btn btn-sm text-xs font-light">Change Answer</div>
+                        :
+                        <div></div>
+                      }
+                      {
+                        question.question_type == 'multi_select' &&
+                          <button
+                            className="btn btn-sm text-xs font-medium"
+                            onClick={() =>
+                              postMultiSelectAnswer({ question_id: question.id, response: selectedOption[question.id] || [] })
+                            }
+                            disabled={answered[question.id]}
+                          >
+                            Submit
+                          </button>
+                      }
+                    </div>
                     {
-                      answered[question.id] ?
-                      <div onClick={() => handleChangeAnswer(question.id)} className="btn btn-sm text-xs font-light">Change Answer</div>
-                      :
-                      <div></div>
-                    }
-                    {/* {
-                      question.question_type == 'multi_select' && multiSelectLoading &&  <span className="loading loading-spinner"></span>
-                    } */}
-                    {
-                      question.question_type == 'multi_select' &&
-                        <button
-                          className="btn btn-sm text-xs font-medium"
-                          onClick={() =>
-                            postMultiSelectAnswer({ question_id: question.id, response: selectedOption[question.id] || [] })
-                          }
-                          disabled={answered[question.id]}
-                        >
-                          Submit
-                        </button>
-                    }
-                  </div>
-                  {
-                    question.question_type == 'multi_select' ?
-                      question.options.map((option, index) => (
-                        <div>
-                            <div className="flex flex-row items-center space-x-2" key={index}>
-                              <input
-                                type="checkbox"
-                                className="checkbox border-1 border-secondary"
-                                checked={
-                                  selectedOption[question.id]?.includes(option) || false
-                                }
-                                onChange={
-                                  () => {
-                                    if(option.includes('sebutkan')) {
-                                      setSebutkan(!sebutkan);
+                      question.question_type == 'multi_select' ?
+                        question.options.map((option, index) => (
+                          <div>
+                              <div className="flex flex-row items-center space-x-2" key={index}>
+                                <input
+                                  type="checkbox"
+                                  className="checkbox border-1 border-secondary"
+                                  checked={
+                                    selectedOption[question.id]?.includes(option) || false
+                                  }
+                                  onChange={
+                                    () => {
+                                      if(option.includes('sebutkan')) {
+                                        setSebutkan(!sebutkan);
+                                      }
+                                      toggleMultiSelectAnswer(question.id, option);
                                     }
-                                    toggleMultiSelectAnswer(question.id, option);
                                   }
+                                  disabled={answered[question.id]}
+                                />
+                                {option.includes('sebutkan') 
+                                  ?
+                                  <div>
+                                    {
+                                      sebutkan ?
+                                        <input 
+                                          type="text" 
+                                          className="p-1"
+                                          value={sebutkanAnswer[question.id]}
+                                          onChange={(e) => setSebutkanAnswer((prev) => ({ ...prev, [question.id]: e.target.value}))}
+                                        />
+                                      :
+                                        "Produk keuangan lain (Harap sebutkan)"
+                                    }
+                                  </div> 
+                                  :
+                                  <div>
+                                    {option}
+                                  </div>
                                 }
-                                disabled={answered[question.id]}
-                              />
-                              {option.includes('sebutkan') 
-                                ?
-                                <div>
-                                  {
-                                    sebutkan ?
-                                      <input 
-                                        type="text" 
-                                        className="p-1"
-                                        value={sebutkanAnswer[question.id]}
-                                        onChange={(e) => setSebutkanAnswer((prev) => ({ ...prev, [question.id]: e.target.value}))}
-                                      />
-                                    :
-                                      "Produk keuangan lain (Harap sebutkan)"
-                                  }
-                                </div> 
-                                :
-                                <div>
-                                  {option}
-                                </div>
-                              }
+                              </div>
                             </div>
+                          ))
+                        :
+                        question.options.map((option, index) => (
+                          <div key={index} onClick={() => postSingleSelectAnswer({ question_id: question.id, response: [option] })} className="flex flex-row space-x-2 items-center">
+                            <button 
+                                // disabled={answered[question.id]} 
+                                className={`btn btn-circle btn-xs btn-ghost border-1 border-secondary ${selectedOption[question.id]?.includes(option) ? "bg-slate-200" : "bg-transparent"} ${answered[question.id] && "border-1 border-white"}`}>
+                              </button>
+                            <div>{option}</div>
                           </div>
                         ))
-                      :
-                      question.options.map((option, index) => (
-                        <div key={index} onClick={() => postSingleSelectAnswer({ question_id: question.id, response: [option] })} className="flex flex-row space-x-2 items-center">
-                          <button 
-                              // disabled={answered[question.id]} 
-                              className={`btn btn-circle btn-xs btn-ghost border-1 border-secondary ${selectedOption[question.id]?.includes(option) ? "bg-slate-200" : "bg-transparent"} ${answered[question.id] && "border-1 border-white"}`}>
-                            </button>
-                          <div>{option}</div>
-                        </div>
-                      ))
-                  }
-                </div>
-              )
+                    }
+                  </div>
+                )
             })
           }
         </div>

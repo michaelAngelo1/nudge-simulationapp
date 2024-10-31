@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import supabase from "../database/supabaseClient";
 import { useGetUser } from "../hooks/useGetUser";
 import { Records } from "../interface/SimulationInterface";
+import RecordCard from "../components/RecordCard";
+import RelatedRecordCard from "../components/RelatedRecordCard";
 
 export default function SimulationPage() {
 
@@ -210,8 +212,8 @@ export default function SimulationPage() {
           <div className="text-center font-light text-white">Bagaimana Anda mengelola uang anda pada produk bank berikut ini.</div>
         </div>
       </div>
-      <div className="font-bold text-xl">Saldo Anda: {dummyBalance ? formatCurrency(dummyBalance) : 'Calculating balance...'}</div>
-      <div className="px-3">
+      <div className="font-semibold text-xl">Saldo Anda: {dummyBalance ? formatCurrency(dummyBalance) : 'Calculating balance...'}</div>
+      {/* <div className="px-3">
         <div className="font-medium">Your profile is</div>
         <div className="flex flex-col">
           {
@@ -222,17 +224,33 @@ export default function SimulationPage() {
             ))
           }
         </div>
-      </div>
-      <div>
+      </div> */}
+      {/* <div>
         {rekomendasi.length > 0 && rekomendasi}
+      </div> */}
+      <div className="flex flex-wrap gap-3 max-tablet:justify-center max-mobile:justify-center">
+        {
+          records && 
+          records.length > 0 &&
+          records
+            .filter((record) => record.record_name.includes(rekomendasi))
+            .map((record) => (
+            <RecordCard {...record}/>
+          ))
+        }
       </div>
-      {
-        records && 
-        records.length > 0 &&
-        records.map((record) => (
-          <div>{record.record_title}</div>
-        ))
-      }
+      <div className="text-xl font-medium max-tablet:text-center max-mobile:text-center">Related products</div>
+      <div className="flex flex-wrap gap-3 max-tablet:justify-center max-mobile:justify-center">
+        {
+          records && 
+          records.length > 0 &&
+          records
+            .filter((record) => !record.record_name.includes(rekomendasi))
+            .map((record) => (
+            <RelatedRecordCard {...record}/>
+          ))
+        }
+      </div>
     </div>
   )
 }
