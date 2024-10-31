@@ -7,6 +7,7 @@ import SurveyForms from './pages/SurveyForms'
 import { SessionProvider } from './context/SessionContext'
 import SimulationPage from './pages/SimulationPage'
 import AdminPage from './pages/AdminPage'
+import SimulationDetailPage from './pages/SimulationDetailPage'
 
 function App() {
 
@@ -24,6 +25,7 @@ function App() {
           <Route path='surveyForms' element={<SurveyForms/>}/>
           <Route path='simulation' element={<SimulationPage/>}/>
           <Route path='admin-page' element={<AdminPage/>}/>
+          <Route path='detail-page' element={<SimulationDetailPage/>}/> 
         </Routes>
       </BrowserRouter>
     </SessionProvider>

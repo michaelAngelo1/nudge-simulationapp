@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import supabase from "../database/supabaseClient";
 import { useGetUser } from "../hooks/useGetUser";
+import { Records } from "../interface/SimulationInterface";
 
 export default function SimulationPage() {
 
@@ -15,9 +16,9 @@ export default function SimulationPage() {
     {
       rule_based_id: '1f2603b2-54b5-4dcb-8bc3-137333d84a96',
     },  
-    {
-      rule_based_id: '88f674b0-a723-4311-9d60-b9afa32c415e' // outside psychography behavior
-    }
+    // {
+    //   rule_based_id: '88f674b0-a723-4311-9d60-b9afa32c415e' // outside psychography behavior
+    // }
   ]
   const [ruleBasedResponses, setRuleBasedResponses] = useState<string[]>([]);
   // for fetch rulebased, avoid double calls
@@ -53,13 +54,97 @@ export default function SimulationPage() {
 
   // Rule-based Function determining one of three results
   // "Keamanan atau Likuiditas Tinggi" -> "Tabungan atau Deposito"
-  // "Toleransi resikot tinggi, minat invest tinggi" -> "Saham atau Reksadana"
+  // "Toleransi resiko tinggi, minat invest tinggi" -> "Saham atau Reksadana"
   // "Produk dengan manfaat pajak or selain two above" -> "Obligasi Pemerintah"
+  const [rekomendasi, setRekomendasi] = useState(""); // can be "Tabungan", "Deposito", "Saham" (v), "Reksa Dana" (v), "Obligasi"
   function getRulebasedRecommendation() { 
+    let responses: string[] = [];
     if(ruleBasedResponses && ruleBasedResponses.length > 0) {
-      console.log(ruleBasedResponses)
+      console.log('RULE BASED RESPONSES: ', ruleBasedResponses);
+      ruleBasedResponses.map((response) => {
+        if(response) {
+          responses.push(response[0]);
+        }
+      })
+    }
+    if(responses && responses.length > 0) {
+      console.log('Array of rulebased responses: ', responses);
+
+      // Rule-based Conditions below
+      if(
+        // All the conditions that outputs 'Saham'
+        (
+          responses.includes('Meningkatkan kekayaan dengan cepat') && responses.includes('Risiko tinggi, imbalan tinggi')
+        ) ||
+        (
+          responses.includes('Risiko tinggi, imbalan tinggi') && responses.includes('Stabilitas keuangan jangka panjang')
+        ) ||
+        (
+          responses.includes('Risiko tinggi, imbalan tinggi') && responses.includes('Menyeimbangkan pertumbuhan dengan stabilitas')
+        ) ||
+        (
+          responses.includes('Risiko moderat') && responses.includes('Meningkatkan kekayaan dengan cepat')
+        )
+      ) {
+        setRekomendasi('Saham');
+      } else if(
+        // All the conditions that outputs 'Reksadana'
+        (
+          responses.includes('Risiko moderat') && responses.includes('Stabilitas keuangan jangka panjang')
+        ) ||
+        (
+          responses.includes('Risiko moderat') && responses.includes('Keamanan dan menghindari risiko')
+        ) ||
+        (
+          responses.includes('Risiko moderat') && responses.includes('Menyeimbangkan pertumbuhan dengan stabilitas')
+        )
+      ) {
+        setRekomendasi('Reksa Dana');
+      } else if(
+        // All the conditions that outputs 'Obligasi'
+        (
+          responses.includes('Risiko rendah, pertumbuhan stabil') && responses.includes('Stabilitas keuangan jangka panjang')
+        ) ||
+        (
+          responses.includes('Risiko rendah, pertumbuhan stabil') && responses.includes('Keamanan dan menghindari risiko')
+        ) ||
+        (
+          responses.includes('Risiko rendah, pertumbuhan stabil') && responses.includes('Menyeimbangkan pertumbuhan dengan stabilitas')
+        )
+      ) {
+        setRekomendasi('Obligasi');
+      } else if(
+        // All the conditions that outputs 'Tabungan' or 'Deposito'
+        (
+          responses.includes('Menghindari risiko') && responses.includes('Stabilitas keuangan jangka panjang')
+        ) ||
+        (
+          responses.includes('Menghindari risiko') && responses.includes('Keamanan dan menghindari risiko')
+        ) ||
+        (
+          responses.includes('Menghindari risiko') && responses.includes('Menyeimbangkan pertumbuhan dengan stabilitas')
+        )
+      ) {
+        setRekomendasi('Deposito'); // add Tabungan as an alternative
+      }
     }
   }
+  
+  const [records, setRecords] = useState<Records[]>([]);
+  async function getRecords() {
+    const { data, error } = await supabase
+      .from('records')
+      .select('*')
+    
+    if(error) {
+      console.log('Error while fetching records', error);
+    }
+    if(data) {
+      console.log('response records: ', data);
+      setRecords(data);
+    }
+  }
+
 
   async function getResponseFirstRuleBased(rule_based_id: string) {
     const { data, error } = await supabase
@@ -81,6 +166,13 @@ export default function SimulationPage() {
   useEffect(() => {
     getRulebasedRecommendation();
   }, [ruleBasedResponses])
+
+  useEffect(() => {
+    if(rekomendasi && rekomendasi.length > 0) {
+      getRecords();
+    }
+  }, [rekomendasi])
+  
   
 
   useEffect(() => {
@@ -111,11 +203,36 @@ export default function SimulationPage() {
   }, [balance])
 
   return (
-    <div>
-      <div>Saldo Anda: {dummyBalance ? formatCurrency(dummyBalance) : 'Calculating balance...'}</div>
-      <div>
-        {ruleBasedResponses}
+    <div className="p-3 flex flex-col space-y-3">
+      <div className="p-3 bg-info opacity-80 max-w-full">
+        <div className="flex flex-col">
+          <div className="text-center font-medium text-white">Ini adalah sebuah simulasi</div>
+          <div className="text-center font-light text-white">Bagaimana Anda mengelola uang anda pada produk bank berikut ini.</div>
+        </div>
       </div>
+      <div className="font-bold text-xl">Saldo Anda: {dummyBalance ? formatCurrency(dummyBalance) : 'Calculating balance...'}</div>
+      <div className="px-3">
+        <div className="font-medium">Your profile is</div>
+        <div className="flex flex-col">
+          {
+            ruleBasedResponses.map((response, index) => (
+              <div key={index} className="list">
+                {response}
+              </div>
+            ))
+          }
+        </div>
+      </div>
+      <div>
+        {rekomendasi.length > 0 && rekomendasi}
+      </div>
+      {
+        records && 
+        records.length > 0 &&
+        records.map((record) => (
+          <div>{record.record_title}</div>
+        ))
+      }
     </div>
   )
 }

@@ -198,7 +198,7 @@ export default function SurveyForms() {
       }
 
       // if true, this sets to input field, else a harap sebutkan string
-      setSebutkan(true);
+      // setSebutkan(true);
       setLoading(false);
     }
     if(error) {
