@@ -161,7 +161,7 @@ export default function SimulationDetailPage() {
             <button
               className="btn btn-primary text-slate-100"
               onClick={
-                () => handleUserPurchase({ user_id: userId, name_purchased: record.record_name, percentage_purchased: inputValue })
+                () => handleUserPurchase({ user_id: userId, name_purchased: record.record_title, percentage_purchased: inputValue })
               }
             >
               Purchase
@@ -172,7 +172,10 @@ export default function SimulationDetailPage() {
       <Modal
         ariaHideApp={false}
         isOpen={modalSuccess}
-        onRequestClose={() => setModalSuccess(false)}
+        onRequestClose={() => {
+          setModalSuccess(false);
+          navigate('/simulation');
+        }}
         style={modalStyles}
       >
         <div className="bg-slate-100 rounded-lg shadow-lg p-6 max-w-md mx-auto space-y-4">

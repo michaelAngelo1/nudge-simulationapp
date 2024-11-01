@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import supabase from "../database/supabaseClient";
 import { useGetUser } from "../hooks/useGetUser";
-import { Pages, Records, UserPageVisits } from "../interface/SimulationInterface";
+import { Pages, Records, UserPageVisits, UserPurchase } from "../interface/SimulationInterface";
 import RecordCard from "../components/RecordCard";
 import RelatedRecordCard from "../components/RelatedRecordCard";
 import { useNavigate } from "react-router-dom";
@@ -249,6 +249,29 @@ export default function SimulationPage() {
     }
   }
 
+  const [userPurchases, setUserPurchases] = useState<UserPurchase[]>([]);
+  async function fetchUserPurchase() {
+    const { data, error } = await supabase
+      .from('user_purchases')
+      .select('*')
+      .eq('user_id', userId)
+    
+    if(error) {
+      console.log('error while fetching user purchase', error);
+    }
+    if(data) {
+      console.log('data user purchases: ', data);
+      setUserPurchases(data);
+    }
+  }
+
+  useEffect(() => {
+    if(userId) {
+      fetchUserPurchase();
+    }
+  }, [userId])
+  
+
   const navigate = useNavigate();
   async function userSignOut() {
     const { error } = await supabase.auth.signOut();
@@ -308,6 +331,19 @@ export default function SimulationPage() {
         {rekomendasi.length > 0 && rekomendasi}
       </div> */}
       <div className="text-xl font-medium max-tablet:text-center max-mobile:text-center">Anda sudah membeli</div>
+      <div className="flex flex-wrap gap-3 max-tablet:justify-center max-mobile:justify-center ">
+        {
+          userPurchases.length > 0 ?
+            userPurchases.map((purchased) => (
+              <div className="relative p-3 m-3 bg-primary w-36 h-36 rounded-xl hover:scale-105 transition">
+                <div className="text-white text-base font-semibold">{purchased.name_purchased}</div>
+                <div className="absolute bottom-3 right-3 text-white text-3xl font-bold">{purchased.percentage_purchased}%</div>
+              </div>
+            ))
+          :
+            <div className="flex justify-center p-3">Belum ada pembelian</div>
+        }  
+      </div>
       <div className="text-xl font-medium max-tablet:text-center max-mobile:text-center">Rekomendasi untuk Anda</div>
       <div className="flex flex-wrap gap-3 max-tablet:justify-center max-mobile:justify-center">
         {
