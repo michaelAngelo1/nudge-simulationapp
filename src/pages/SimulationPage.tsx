@@ -4,6 +4,7 @@ import { useGetUser } from "../hooks/useGetUser";
 import { Pages, Records, UserPageVisits } from "../interface/SimulationInterface";
 import RecordCard from "../components/RecordCard";
 import RelatedRecordCard from "../components/RelatedRecordCard";
+import { useNavigate } from "react-router-dom";
 
 export default function SimulationPage() {
 
@@ -248,6 +249,17 @@ export default function SimulationPage() {
     }
   }
 
+  const navigate = useNavigate();
+  async function userSignOut() {
+    const { error } = await supabase.auth.signOut();
+    if(error) {
+      throw new Error('Error while signing out');
+    } else {
+      console.log('user signed out');
+      navigate('/auth/ui/signIn')
+    }
+  }
+
   const startTimeRef = useRef<number>(0);
   useEffect(() => {
     startTimeRef.current = Date.now();
@@ -319,6 +331,9 @@ export default function SimulationPage() {
             <RelatedRecordCard key={index} {...record}/>
           ))
         }
+      </div>
+      <div className="flex justify-center">
+        <button onClick={userSignOut} className="btn btn-shadow w-1/4 text-center font-medium">Finish Simulation?</button>
       </div>
     </div>
   )
