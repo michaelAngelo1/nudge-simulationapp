@@ -1,11 +1,12 @@
 import supabase from "../database/supabaseClient"
 import { Link, useNavigate } from "react-router-dom";
 import { useGetUser } from "../hooks/useGetUser";
+import { useEffect } from "react";
 
 export default function SurveyHome() {
   
   // const { user } = useSession();
-  const { user, loading } = useGetUser();
+  const { user, userId, loading } = useGetUser();
   const navigate = useNavigate();
 
   async function userSignOut() {
@@ -17,6 +18,34 @@ export default function SurveyHome() {
       navigate('/')
     }
   }
+
+    async function checkUserFinishSurvey() {
+      if(userId) {
+        const { data, error } = await supabase
+          .from('user_finish_surveys')
+          .select('*')
+          .eq('user_id', userId)
+        
+        if(error) {
+          console.log('error while checking user finish survey: ', error);
+        }
+        if(data) {
+          console.log('successful checking user finish survey: ', data);
+          if(data.length > 0) {
+            navigate('/simulation')
+          } else {
+            console.log('user hasnt finished the survey', userId);
+          }
+        }
+      }
+    }
+
+  useEffect(() => {
+    if(userId) {
+      checkUserFinishSurvey();
+    }
+  }, [userId])
+  
 
   if(!user) {
     navigate('/');

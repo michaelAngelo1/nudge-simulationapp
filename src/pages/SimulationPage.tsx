@@ -270,13 +270,6 @@ export default function SimulationPage() {
       }
     }
   }, [startTimeRef, listPageData])
-
-  // useEffect(() => {
-  //   fetchListPage();
-  // }, [])
-  
-  console.log('REKOMENDASI');
-  console.log('REKOMENDASI 2: ', rekomendasi);
   
   return (
     <div className="p-3 flex flex-col space-y-3">

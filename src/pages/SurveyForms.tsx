@@ -269,6 +269,24 @@ export default function SurveyForms() {
     }
   };
 
+  const handleUserFinishSurvey = async (has_finished: boolean) => {
+    if(userId) {
+      const { data, error } = await supabase
+        .from('user_finish_surveys')
+        .insert({
+          user_id: userId,
+          has_finished: has_finished
+        })
+      
+      if(error) {
+        console.log('error while user finish survey: ', error);
+      }
+      if(data) {
+        console.log('successful user finish survey: ', data[0]);
+      }
+    }
+  }
+
   useEffect(() => {
     fetchQuestions();
     fetchSurveyTypes();
@@ -404,7 +422,7 @@ export default function SurveyForms() {
           <button disabled={index == 0 && true} onClick={handlePrevious} className="btn btn-secondary text-sm font-medium">Previous</button>
           <button disabled={index == surveyTypes.length - 1 && true} onClick={handleNext} className="btn btn-secondary text-sm font-medium">Next</button>
         </div>
-        {index === surveyTypes.length - 1 && <Link to='/simulation' className="btn btn-primary text-sm font-medium">Submit. Go to simulation</Link>}
+        {index === surveyTypes.length - 1 && <Link to='/simulation' onClick={() => handleUserFinishSurvey(true)} className="btn btn-primary text-sm font-medium">Submit. Go to simulation</Link>}
       </div>
     </div>
   )
