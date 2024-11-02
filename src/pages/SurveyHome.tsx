@@ -52,25 +52,25 @@ export default function SurveyHome() {
   }
   if(loading) {
     return (
-      <div className="h-screen flex justify-center items-center">
+      <div className="h-screen flex justify-center items-center bg-slate-100">
         <span className="loading loading-spinner"></span>
       </div>
     )
   }
   return (
-    <div className="p-3 h-screen flex flex-col space-y-3 justify-center items-center max-mobile:justify-center max-tablet:justify-center">
-      <div className="text-center text-xl font-medium">
+    <div className="p-3 bg-slate-100 h-screen flex flex-col space-y-3 justify-center items-center max-mobile:justify-center max-tablet:justify-center">
+      <div className="text-slate-700 text-center text-xl font-medium">
         Welcome, {user?.email}
       </div>
-      <div className="text-center">
+      <div className="text-center text-base text-slate-700">
         Start if you are ready to take the study
       </div>
       <Link 
-        className="btn btn-primary text-base" 
+        className="btn btn-primary text-base text-slate-100" 
         to="/surveyForms">
         Let's start
       </Link>
-      <button className="btn" onClick={userSignOut}>sign out</button>
+      <button className="btn btn-link text-slate-700" onClick={userSignOut}>Sign out</button>
     </div>
 
   )

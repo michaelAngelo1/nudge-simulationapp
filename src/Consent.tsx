@@ -60,7 +60,7 @@ export default function Consent() {
   
 
   return (
-    <div className="p-3 h-full flex flex-col space-y-3 justify-center items-center">
+    <div className="p-3 h-full flex flex-col space-y-3 justify-center items-center bg-slate-100 text-slate-700">
       <div className="h-full w-full">
         <div className="overflow-y-auto h-full p-3 border border-1 border-grey-200 rounded-lg">
           <div className="space-y-1">
@@ -225,7 +225,7 @@ export default function Consent() {
           {
             consentAgree && 
             <div className="flex justify-center p-6">
-              <Link className='p-3 btn btn-primary text-base' to='auth/ui/signUp'>Let's start</Link>
+              <Link className='p-3 btn btn-primary text-slate-100 text-base' to='auth/ui/signUp'>Let's start</Link>
             </div>
           }      
         </div>

@@ -325,7 +325,7 @@ export default function SurveyForms() {
     )
   }
   return (
-    <div className="flex flex-col justify-center items-center m-3">
+    <div className="flex flex-col justify-center items-center p-3 bg-slate-100 text-slate-800 min-h-screen">
       <div ref={scrollRef} className="border border-1 p-4 w-1/2 max-mobile:w-full max-tablet:w-full">
         <div className="text-xl font-medium">{currentSurveyType}</div>
         <div className="flex flex-col overflow-auto">
@@ -339,14 +339,14 @@ export default function SurveyForms() {
                       <div className="text-base font-medium">{question.question_text}</div>
                       {
                         answered[question.id] ?
-                        <div onClick={() => handleChangeAnswer(question.id)} className="btn btn-sm text-xs font-light">Change Answer</div>
+                        <div onClick={() => handleChangeAnswer(question.id)} className="btn bg-slate-100 btn-sm text-xs text-slate-800 font-light">Change Answer</div>
                         :
                         <div></div>
                       }
                       {
                         question.question_type == 'multi_select' &&
                           <button
-                            className="btn btn-sm text-xs font-medium"
+                            className="btn btn-sm bg-success text-slate-100 text-xs font-medium"
                             onClick={() =>
                               postMultiSelectAnswer({ question_id: question.id, response: selectedOption[question.id] || [] })
                             }
@@ -405,7 +405,7 @@ export default function SurveyForms() {
                           <div key={index} onClick={() => postSingleSelectAnswer({ question_id: question.id, response: [option] })} className="flex flex-row space-x-2 items-center">
                             <button 
                                 // disabled={answered[question.id]} 
-                                className={`btn btn-circle btn-xs btn-ghost border-1 border-secondary ${selectedOption[question.id]?.includes(option) ? "bg-slate-200" : "bg-transparent"} ${answered[question.id] && "border-1 border-white"}`}>
+                                className={`btn btn-circle btn-xs border-1 border-slate-800 ${selectedOption[question.id]?.includes(option) ? "bg-primary" : "bg-transparent"} ${answered[question.id] && "border-1 border-white"}`}>
                               </button>
                             <div>{option}</div>
                           </div>
@@ -419,10 +419,10 @@ export default function SurveyForms() {
       </div>
       <div className="flex flex-col space-y-2 mt-3">
         <div className="flex flex-row p-3 space-x-2">
-          <button disabled={index == 0 && true} onClick={handlePrevious} className="btn btn-secondary text-sm font-medium">Previous</button>
-          <button disabled={index == surveyTypes.length - 1 && true} onClick={handleNext} className="btn btn-secondary text-sm font-medium">Next</button>
+          <button disabled={index == 0 && true} onClick={handlePrevious} className="btn btn-secondary text-slate-100 text-sm font-medium">Previous</button>
+          <button disabled={index == surveyTypes.length - 1 && true} onClick={handleNext} className="btn btn-primary text-slate-100 text-sm font-medium">Next</button>
         </div>
-        {index === surveyTypes.length - 1 && <Link to='/simulation' onClick={() => handleUserFinishSurvey(true)} className="btn btn-primary text-sm font-medium">Submit. Go to simulation</Link>}
+        {index === surveyTypes.length - 1 && <Link to='/simulation' onClick={() => handleUserFinishSurvey(true)} className="btn btn-primary text-sm text-slate-100 font-medium">Submit. Go to simulation</Link>}
       </div>
     </div>
   )

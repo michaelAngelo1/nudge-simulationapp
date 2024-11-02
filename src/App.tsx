@@ -15,7 +15,7 @@ function App() {
     <SessionProvider>
       <BrowserRouter>
         <div className='navbar text-slate-700 sticky top-0 z-50 bg-slate-100 flex justify-center items-center border-b border-1 border-base'>
-          <div className='text-center text-2xl font-bold'>Nudge Simulation App</div>                                  
+          <div className='text-center text-2xl font-semibold'>Nudge Simulation App</div>                                  
         </div>
         <Routes>
           <Route path='/' element={<Consent/>}/>
