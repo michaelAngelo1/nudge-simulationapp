@@ -5,10 +5,12 @@
   import RecordCard from "../components/RecordCard";
   import RelatedRecordCard from "../components/RelatedRecordCard";
   import { useNavigate } from "react-router-dom";
+  import { modalStyles } from "./SimulationDetailPage";
+  import Modal from 'react-modal';
 
   export default function SimulationPage() {
 
-    const [loading, setLoading] = useState(false);
+    // const [loading, setLoading] = useState(false);
     const [balance, setBalance] = useState<string>();
     const [dummyBalance, setDummyBalance] = useState<number>();
     const { userId } = useGetUser();
@@ -206,10 +208,14 @@
     }, [userId, questionId]);
 
     useEffect(() => {
-      if(balance && balance.length > 0 && userPurchases.length == 0) {
-        const newBalance = getUpperBound(balance);
-        // console.log('new balance after conversion: ', newBalance);
-        setDummyBalance(newBalance * 24000000);
+      if(balance) {
+        if(balance.length > 0) {
+          const newBalance = getUpperBound(balance);
+          // console.log('new balance after conversion: ', newBalance);
+          setDummyBalance(newBalance * 24000000);
+        } else {
+          setDummyBalance(1000000000);
+        }
       }
     }, [balance])
 
@@ -274,19 +280,61 @@
         fetchUserPurchase();
       }
     }, [userId])
-
+    
+    let dummyBalanceRef = 0;
+    if(dummyBalance) {
+      dummyBalanceRef = dummyBalance;
+    }
+    const [displayedBalance, setDisplayedBalance] = useState(0);
     useEffect(() => {
-      if(userPurchases.length > 0) {
-        console.log('DUMMY BALANCE: ', dummyBalance);
-        userPurchases
-          .map((purchased) => {
-            setDummyBalance((prevBalance) => prevBalance! - ((purchased.percentage_purchased * prevBalance!)/100))
-        })
+      if(dummyBalance && userPurchases.length > 0) {
+        console.log('dummyBalanceRef global: ', dummyBalanceRef);
+        userPurchases.map((userPurchase) => {
+          console.log('USER PURCHASED: ', userPurchase.name_purchased);
+          dummyBalanceRef -= ((dummyBalance! * userPurchase.percentage_purchased)/100)
+        });
+        console.log('DUMMY BALANCE REF: ', dummyBalanceRef);
+        setDisplayedBalance(dummyBalanceRef);
       }
     }, [userPurchases])
-    
 
     const navigate = useNavigate();
+    const [finishSimulationModal, setFinishSimulationModal] = useState(false);
+
+    const [phoneNumberValue, setPhoneNumberValue] = useState('');
+    const handleChangePhone = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      setPhoneNumberValue(value ? value : '');
+    };
+
+    const [loading, setLoading] = useState(false);
+    async function handleFinishSimulation(finishSimulation: boolean, phoneNumber: string) {
+      setLoading(true);
+      console.log('MASUK handle finish sim')
+      const { error } = await supabase
+        .from('user_finish_simulations')
+        .insert({
+          user_id: userId,
+          finished_simulation: finishSimulation,
+          phone_number: phoneNumber
+        })
+
+      if(error) {
+        console.log('error while posting finish simulation: ', error.message);
+        if(error.message.includes('duplicate')) {
+          setLoading(false);
+          userSignOut();
+          setFinishSimulationModal(false);
+        }
+      } else {
+        console.log('MASUK handle success');
+        userSignOut();
+        setFinishSimulationModal(false);
+        setLoading(false);
+        // userSignOut();
+      }
+    }
+
     async function userSignOut() {
       const { error } = await supabase.auth.signOut();
       if(error) {
@@ -320,6 +368,13 @@
       }
     }, [startTimeRef, listPageData])
     
+    if(loading) {
+      return (
+        <div className="h-screen flex justify-center items-center bg-slate-100">
+          <span className="loading loading-spinner"></span>
+        </div>
+      )
+    }
     return (
       <div className="p-3 flex flex-col space-y-3 bg-slate-100">
         <div className="p-3 bg-info opacity-80 max-w-full">
@@ -332,7 +387,12 @@
           </div>
         </div>
         <div className="font-semibold text-xl text-slate-700">
-          Saldo Anda: {dummyBalance ? formatCurrency(dummyBalance) : 'Calculating balance...'}
+          Saldo Anda: {
+            userPurchases ?
+            displayedBalance !== 0 ? formatCurrency(displayedBalance) : 'Calculating balance...'
+            :
+            dummyBalance ? formatCurrency(dummyBalance) : 'Calculating balance...'
+          }
         </div>
         {/* <div className="px-3">
           <div className="font-medium">Your profile is</div>
@@ -388,8 +448,47 @@
           }
         </div>
         <div className="flex justify-center">
-          <button onClick={userSignOut} className="btn btn-primary text-slate-100 w-1/4 text-center font-medium">Finish Simulation?</button>
+          <button onClick={() => setFinishSimulationModal(true)} className="btn btn-primary text-slate-100 w-1/4 text-center font-medium">Finish Simulation?</button>
         </div>
+        <Modal
+          ariaHideApp={false}
+          isOpen={finishSimulationModal}
+          onRequestClose={() => {
+            setFinishSimulationModal(false);
+          }}
+          style={modalStyles}
+        >
+          <div className="bg-slate-100 rounded-lg shadow-lg p-6 max-w-md mx-auto space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-700">Thank you for finishing the study!</h2>
+            </div>
+
+            <div className="text-gray-700">Thank you for finishing the study! Kindly fill your phone number below. We have some e-wallet prize as a thanks for your contribution to the study.</div>
+
+            <input 
+              onChange={handleChangePhone}
+              value={phoneNumberValue}
+              type='text' 
+              className="input input-bordered w-full max-w-xs bg-slate-100 input-secondary text-gray-700" 
+            />
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <button
+                className="btn btn-secondary text-slate-100"
+                onClick={() => setFinishSimulationModal(false)}
+              >
+                Close
+              </button>
+              <button
+                className="btn btn-primary text-slate-100"
+                onClick={() => handleFinishSimulation(true, phoneNumberValue)}
+              >
+                Finish and Submit
+              </button>
+            </div>
+          </div>
+        </Modal>
       </div>
     )
   }

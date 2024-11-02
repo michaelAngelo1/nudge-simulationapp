@@ -205,7 +205,7 @@ export default function SimulationDetailPage() {
   )
 }
 
-const modalStyles = {
+export const modalStyles = {
   content: {
     top: '50%',
     left: '50%',
