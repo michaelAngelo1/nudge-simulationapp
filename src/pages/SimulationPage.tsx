@@ -270,6 +270,16 @@ export default function SimulationPage() {
       fetchUserPurchase();
     }
   }, [userId])
+
+  useEffect(() => {
+    if(userPurchases.length > 0) {
+      userPurchases.map((userPurchase) => {
+        console.log('user purchased: ', typeof userPurchase.percentage_purchased);
+        setDummyBalance(dummyBalance! - ((dummyBalance! * userPurchase.percentage_purchased)/100))
+      })
+    }
+  }, [userPurchases])
+  
   
 
   const navigate = useNavigate();
@@ -307,14 +317,14 @@ export default function SimulationPage() {
   }, [startTimeRef, listPageData])
   
   return (
-    <div className="p-3 flex flex-col space-y-3">
+    <div className="p-3 flex flex-col space-y-3 bg-slate-100">
       <div className="p-3 bg-info opacity-80 max-w-full">
         <div className="flex flex-col">
           <div className="text-center font-medium text-white">Ini adalah sebuah simulasi</div>
           <div className="text-center font-light text-white">Bagaimana Anda mengelola uang Anda pada produk bank berikut ini.</div>
         </div>
       </div>
-      <div className="font-bold text-xl">Saldo Anda: {dummyBalance ? formatCurrency(dummyBalance) : 'Calculating balance...'}</div>
+      <div className="font-semibold text-xl text-slate-700">Saldo Anda: {dummyBalance ? formatCurrency(dummyBalance) : 'Calculating balance...'}</div>
       {/* <div className="px-3">
         <div className="font-medium">Your profile is</div>
         <div className="flex flex-col">
@@ -330,7 +340,7 @@ export default function SimulationPage() {
       {/* <div>
         {rekomendasi.length > 0 && rekomendasi}
       </div> */}
-      <div className="text-xl font-medium max-tablet:text-center max-mobile:text-center">Anda sudah membeli</div>
+      <div className="text-xl text-slate-700 font-medium max-tablet:text-center max-mobile:text-center">Anda sudah membeli</div>
       <div className="flex flex-wrap gap-3 max-tablet:justify-center max-mobile:justify-center ">
         {
           userPurchases.length > 0 ?
@@ -341,10 +351,10 @@ export default function SimulationPage() {
               </div>
             ))
           :
-            <div className="flex justify-center p-3">Belum ada pembelian</div>
+            <div className="flex text-slate-700 justify-center p-3">Belum ada pembelian</div>
         }  
       </div>
-      <div className="text-xl font-medium max-tablet:text-center max-mobile:text-center">Rekomendasi untuk Anda</div>
+      <div className="text-xl text-slate-700 font-medium max-tablet:text-center max-mobile:text-center">Rekomendasi untuk Anda</div>
       <div className="flex flex-wrap gap-3 max-tablet:justify-center max-mobile:justify-center">
         {
           records && 
@@ -356,7 +366,7 @@ export default function SimulationPage() {
           ))
         }
       </div>
-      <div className="text-xl font-medium max-tablet:text-center max-mobile:text-center">Produk terkait</div>
+      <div className="text-xl text-slate-700 font-medium max-tablet:text-center max-mobile:text-center">Produk terkait</div>
       <div className="flex flex-wrap gap-3 max-tablet:justify-center max-mobile:justify-center">
         {
           records && 
@@ -369,7 +379,7 @@ export default function SimulationPage() {
         }
       </div>
       <div className="flex justify-center">
-        <button onClick={userSignOut} className="btn btn-shadow w-1/4 text-center font-medium">Finish Simulation?</button>
+        <button onClick={userSignOut} className="btn btn-primary text-slate-100 w-1/4 text-center font-medium">Finish Simulation?</button>
       </div>
     </div>
   )
