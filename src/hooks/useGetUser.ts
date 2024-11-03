@@ -22,6 +22,7 @@ export const useGetUser = () => {
 
         if (session?.user) {
           setUser(session.user);
+          
           setUserId(session.user.id);
         } else {
           setUser(null);

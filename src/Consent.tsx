@@ -62,7 +62,7 @@ export default function Consent() {
   return (
     <div className="p-3 h-full flex flex-col space-y-3 justify-center items-center bg-slate-100 text-slate-700">
       <div className="h-full w-full">
-        <div className="overflow-y-auto h-full p-3 border border-1 border-grey-200 rounded-lg">
+        <div className="overflow-y-auto h-full p-3 border border-1 border-slate-800 rounded-lg">
           <div className="space-y-1">
             <div className="text-xl font-bold">Research Study Consent Form</div>
             <div className="text-lg font-medium">Title of Study</div>
