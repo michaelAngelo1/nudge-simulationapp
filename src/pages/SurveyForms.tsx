@@ -205,7 +205,7 @@ export default function SurveyForms() {
       setLoading(false);
     }
     if(error) {
-      console.log('error while fetch responses', error);
+      console.log('error while fetching responses', error);
     }
   }
   
